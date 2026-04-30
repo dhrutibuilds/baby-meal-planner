@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Baby Meal Planner</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --or:    #f97316;
+      --or-dk: #ea580c;
+      --or-lt: #fff7ed;
+      --bg:    #fffbf7;
+      --card:  #ffffff;
+      --txt:   #1c1917;
+      --muted: #78716c;
+      --bdr:   #fed7aa;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--txt);
+    }
+
+    /* ── Header ── */
+    .hdr {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; gap: 10px;
+      padding: max(14px, env(safe-area-inset-top)) 16px 14px;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      color: #fff; box-shadow: 0 2px 14px rgba(249,115,22,.3);
+    }
+    .hdr-icon { font-size: 26px; }
+    .hdr-txt { flex: 1; }
+    .hdr-txt h1 { font-size: 17px; font-weight: 700; }
+    .hdr-txt p  { font-size: 11px; opacity: .8; margin-top: 1px; }
+    .icon-btn {
+      width: 36px; height: 36px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,.2); color: #fff; font-size: 17px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,.35); }
+
+    /* ── Main ── */
+    .main { padding: 16px 16px max(28px, env(safe-area-inset-bottom)); }
+
+    .top-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .week-lbl { font-size: 13px; color: var(--muted); font-weight: 500; }
+
+    .gen-btn {
+      display: flex; align-items: center; gap: 7px;
+      padding: 11px 18px; background: var(--or); color: #fff;
+      border: none; border-radius: 14px;
+      font-size: 14px; font-weight: 600; font-family: inherit;
+      cursor: pointer; box-shadow: 0 3px 12px rgba(249,115,22,.35);
+      transition: background .15s, transform .15s;
+    }
+    .gen-btn:hover    { background: var(--or-dk); }
+    .gen-btn:active   { transform: scale(.97); }
+    .gen-btn:disabled { opacity: .6; cursor: default; transform: none; box-shadow: none; }
+
+    /* ── Grid ── */
+    .grid-scroll {
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      margin: 0 -16px; padding: 0 16px 8px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 60px repeat(7, minmax(116px, 1fr));
+      gap: 5px; min-width: 872px;
+    }
+    .g-corner { /* spacer */ }
+
+    .g-day {
+      text-align: center; padding: 7px 4px;
+      font-size: 12px; font-weight: 700; color: var(--or-dk);
+      border-radius: 8px; cursor: pointer; user-select: none;
+      transition: background .15s;
+    }
+    .g-day:hover { background: var(--or-lt); }
+    .g-day.today { background: var(--or-lt); color: var(--or); }
+    .g-day.today:hover { filter: brightness(.96); }
+    .g-date {
+      display: block; font-size: 10.5px; font-weight: 400;
+      color: var(--muted); margin-top: 1px;
+    }
+
+    .g-lbl {
+      display: flex; align-items: center; justify-content: flex-end;
+      padding-right: 6px;
+      font-size: 10px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+
+    .g-cell {
+      background: var(--card); border: 2px dashed var(--bdr);
+      border-radius: 11px; padding: 8px 6px 6px;
+      min-height: 112px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; gap: 2px;
+      position: relative;
+      transition: box-shadow .2s, background .2s, border-color .2s, opacity .2s;
+    }
+    .g-cell.filled {
+      border: 2px solid transparent;
+      box-shadow: 0 1px 8px rgba(0,0,0,.09);
+      cursor: pointer; justify-content: flex-start;
+      padding-top: 26px;
+    }
+    .g-cell.filled:hover { box-shadow: 0 2px 14px rgba(0,0,0,.13); }
+
+    /* Drag handle */
+    .c-handle {
+      position: absolute; top: 4px; left: 5px;
+      width: 20px; height: 20px;
+      border: none; background: none; padding: 0;
+      color: var(--muted); font-size: 13px; cursor: grab;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 4px; opacity: 0; transition: opacity .15s, background .15s;
+      z-index: 2; touch-action: none;
+    }
+    .g-cell:hover .c-handle { opacity: .65; }
+    .c-handle:hover { opacity: 1 !important; background: rgba(0,0,0,.06); }
+    .c-handle:active { cursor: grabbing; }
+
+    /* Cell content */
+    .c-emoji { font-size: 20px; line-height: 1.2; }
+    .c-name  { font-size: 11px; font-weight: 600; line-height: 1.3; color: var(--txt); }
+    .c-time  { font-size: 9.5px; color: var(--muted); }
+
+    /* Status bar */
+    .c-status-bar { display: flex; gap: 4px; margin-top: auto; padding-top: 5px; }
+    .c-status-btn {
+      width: 26px; height: 22px;
+      border: none; border-radius: 6px; background: #f0ece5;
+      font-size: 11px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      opacity: .4; transition: opacity .15s, background .15s, transform .1s;
+    }
+    .c-status-btn:hover { opacity: 1; }
+    .c-status-btn.active { opacity: 1; background: var(--or-lt); }
+    .c-status-btn:active { transform: scale(.88); }
+
+    /* Cell status tints */
+    .g-cell.st-made {
+      background: #f0fdf4 !important; border-color: #bbf7d0 !important;
+      box-shadow: 0 1px 8px rgba(34,197,94,.12) !important;
+    }
+    .g-cell.st-skipped {
+      background: #f5f5f5 !important; border-color: #e5e5e5 !important;
+      box-shadow: none !important; opacity: .58;
+    }
+
+    /* DnD states */
+    .g-cell.dragging { opacity: .3; }
+    .g-cell.drag-over {
+      border: 2px dashed var(--or) !important;
+      background: var(--or-lt) !important;
+    }
+    .g-cell.swap-sel {
+      border: 2px solid var(--or) !important;
+      animation: swapPulse .9s ease-in-out infinite;
+    }
+    @keyframes swapPulse {
+      0%,100% { box-shadow: 0 0 0 3px rgba(249,115,22,.3); }
+      50%      { box-shadow: 0 0 0 6px rgba(249,115,22,.08); }
+    }
+
+    /* Inline edit input */
+    .cell-edit-input {
+      width: 93%; border: 1.5px solid var(--or); border-radius: 6px;
+      padding: 3px 6px; font-size: 11px; font-weight: 600;
+      font-family: inherit; text-align: center; background: #fff; outline: none;
+    }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2.5px solid rgba(255,255,255,.4);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    /* ── Grocery ── */
+    .sec-title {
+      font-size: 16px; font-weight: 700; margin: 24px 0 12px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .grocery-section { margin-bottom: 18px; }
+    .grocery-cat-hdr {
+      font-size: 12px; font-weight: 700; color: var(--muted);
+      letter-spacing: .4px; margin-bottom: 8px; padding-left: 2px;
+    }
+    .grocery-items {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    }
+    @media (min-width: 480px) { .grocery-items { grid-template-columns: repeat(3,1fr); } }
+    .grocery-item {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--card); border-radius: 10px; padding: 9px 12px;
+      font-size: 13px; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      cursor: pointer; user-select: none;
+    }
+    .grocery-item input[type=checkbox] {
+      width: 16px; height: 16px; accent-color: var(--or);
+      flex-shrink: 0; cursor: pointer;
+    }
+    .grocery-item.done span { text-decoration: line-through; color: var(--muted); }
+
+    /* ── API Key modal ── */
+    .backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,.52);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200; padding: 20px;
+    }
+    .backdrop.hidden { display: none; }
+    .modal {
+      background: var(--card); border-radius: 22px;
+      padding: 26px 22px 22px; width: 100%; max-width: 375px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.25);
+    }
+    .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .modal p  { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
+    .modal input {
+      display: block; width: 100%; padding: 12px 14px;
+      border: 2px solid #e5e7eb; border-radius: 12px;
+      font-size: 14px; font-family: monospace; color: var(--txt);
+      margin-bottom: 12px; transition: border-color .2s;
+    }
+    .modal input:focus { outline: none; border-color: var(--or); }
+    .modal-btn {
+      display: block; width: 100%; padding: 13px;
+      background: var(--or); color: #fff; border: none;
+      border-radius: 12px; font-size: 15px; font-weight: 600;
+      font-family: inherit; cursor: pointer; transition: background .15s;
+    }
+    .modal-btn:hover { background: var(--or-dk); }
+    .modal-hint { text-align: center; margin-top: 10px; font-size: 11.5px; color: var(--muted); }
+
+    /* ── Bottom sheets ── */
+    .sheet-bd {
+      position: fixed; inset: 0; background: rgba(0,0,0,.5);
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      z-index: 300; display: flex; align-items: flex-end;
+    }
+    .sheet-bd.hidden { display: none; }
+    .sheet {
+      background: var(--card); border-radius: 22px 22px 0 0;
+      width: 100%; max-height: 86vh;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+      animation: slideUp .28s cubic-bezier(.34,1.2,.64,1);
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: .5; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+    .sheet-hdr {
+      position: sticky; top: 0; background: var(--card);
+      padding: 16px 18px 12px; border-bottom: 1px solid #f0ece5;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .sh-emoji { font-size: 36px; line-height: 1; flex-shrink: 0; }
+    .sh-info  { flex: 1; }
+    .sh-name  { font-size: 18px; font-weight: 700; line-height: 1.2; }
+    .sh-meta  { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .close-btn {
+      width: 30px; height: 30px; border-radius: 50%;
+      border: none; background: #f0ece5; font-size: 14px;
+      cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sheet-body { padding: 16px 18px max(28px, env(safe-area-inset-bottom)); }
+
+    /* Recipe sections */
+    .r-sec {
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .7px;
+      color: var(--or); margin: 18px 0 8px;
+    }
+    .r-sec:first-child { margin-top: 0; }
+    .ing-list { display: flex; flex-direction: column; gap: 5px; }
+    .ing-item {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 14px; padding: 8px 12px;
+      background: var(--or-lt); border-radius: 9px;
+    }
+    .ing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--or); flex-shrink: 0; }
+    .recipe-text { font-size: 14px; line-height: 1.75; color: var(--txt); white-space: pre-wrap; }
+
+    /* Day view */
+    .day-meal-sec { padding-bottom: 4px; }
+    .day-divider { border: none; border-top: 1px solid #f0ece5; margin: 20px 0; }
+    .day-meal-hdr { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+    .day-meal-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+    .day-meal-lbl {
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .6px; color: var(--or);
+    }
+    .day-meal-name { font-size: 16px; font-weight: 700; margin-top: 2px; }
+    .day-meal-time { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .day-grocery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+    .swap-hint {
+      font-size: 11px; color: var(--or); background: var(--or-lt);
+      border-radius: 8px; padding: 6px 10px; margin-bottom: 10px;
+      text-align: center; display: none;
+    }
+    .swap-hint.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<header class="hdr">
+  <span class="hdr-icon">🥕</span>
+  <div class="hdr-txt">
+    <h1>Baby Meal Planner</h1>
+    <p>Vegetarian · Finger foods · Under 30 min · Ghee daily</p>
+  </div>
+  <button class="icon-btn" onclick="openModal()" title="API Key">⚙️</button>
+</header>
+
+<!-- API Key modal -->
+<div class="backdrop hidden" id="backdrop">
+  <div class="modal">
+    <h2>🔑 Anthropic API Key</h2>
+    <p>Saved only in <strong>this browser's local storage</strong>. Sent directly to Anthropic — never through any third-party server.</p>
+    <input type="password" id="keyInput" placeholder="sk-ant-api03-…" autocomplete="off" />
+    <button class="modal-btn" onclick="saveKey()">Save Key</button>
+    <p class="modal-hint">Get a key at <strong>console.anthropic.com</strong></p>
+  </div>
+</div>
+
+<!-- Recipe bottom sheet -->
+<div class="sheet-bd hidden" id="recipeBd" onclick="closeSheet('recipeBd', event)">
+  <div class="sheet" id="recipeSheet">
+    <div class="sheet-hdr">
+      <div class="sh-emoji" id="shEmoji"></div>
+      <div class="sh-info">
+        <div class="sh-name" id="shName"></div>
+        <div class="sh-meta" id="shMeta"></div>
+      </div>
+      <button class="close-btn" onclick="closeSheet('recipeBd')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="r-sec">Ingredients</div>
+      <div class="ing-list" id="shIngredients"></div>
+      <div class="r-sec">Steps</div>
+      <div class="recipe-text" id="shRecipe"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Day view bottom sheet -->
+<div class="sheet-bd hidden" id="dayBd" onclick="closeSheet('dayBd', event)">
+  <div class="sheet" id="daySheet">
+    <div class="sheet-hdr">
+      <div class="sh-info">
+        <div class="sh-name" id="dayShName"></div>
+        <div class="sh-meta" id="dayShMeta"></div>
+      </div>
+      <button class="close-btn" onclick="closeSheet('dayBd')">✕</button>
+    </div>
+    <div class="sheet-body" id="dayShBody"></div>
+  </div>
+</div>
+
+<main class="main">
+  <div class="top-bar">
+    <span class="week-lbl" id="weekLbl"></span>
+    <button class="gen-btn" id="genBtn" onclick="generate()">
+      <span>✨</span> Generate Plan
+    </button>
+  </div>
+
+  <div class="swap-hint" id="swapHint">⠿ Tap any other meal to swap — or tap outside to cancel</div>
+
+  <div class="grid-scroll">
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div id="grocerySec" style="display:none">
+    <div class="sec-title">🛒 Grocery List</div>
+    <div id="groceryBody"></div>
+  </div>
+</main>
+
+<script>
+/* ── Constants ── */
+const DAYS  = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const MEALS = ['breakfast','lunch','dinner'];
+const LABELS = { breakfast: 'Bfast', lunch: 'Lunch', dinner: 'Dinner' };
+const MEAL_ICONS = { breakfast: '🌅', lunch: '🌞', dinner: '🌙' };
+
+const CATEGORIES = [
+  { id: 'produce', label: '🥦 Produce',
+    kw: ['banana','apple','pear','mango','avocado','spinach','carrot','sweet potato','yam','pumpkin','squash','zucchini','courgette','potato','beetroot','beet','pea','tomato','cucumber','broccoli','cauliflower','corn','capsicum','pepper','berry','strawberry','blueberry','papaya','peach','plum','kiwi','melon','watermelon','lemon','lime','orange','onion','garlic','ginger','mushroom','celery','radish','eggplant','brinjal','aubergine','okra','bitter gourd','ridge gourd','bottle gourd','lauki','green bean','french bean','drumstick','moringa','coriander','cilantro','mint','basil','parsley','curry leaf','vegetable','fruit','leafy'] },
+  { id: 'dairy', label: '🥛 Dairy & Eggs',
+    kw: ['milk','yogurt','curd','cheese','paneer','ghee','butter','cream','egg','whey','cheddar','mozzarella','ricotta','buttermilk','cottage cheese'] },
+  { id: 'grains', label: '🌾 Grains & Flours',
+    kw: ['rice','oat','bread','roti','chapati','atta','flour','wheat','quinoa','semolina','suji','sooji','rava','noodle','pasta','poha','flattened rice','daliya','broken wheat','barley','millet','ragi','jowar','sorghum','bajra','maize','cornmeal','puffed rice','tortilla','pita','cracker','biscuit','cornflour','corn starch','arrowroot','tapioca'] },
+  { id: 'protein', label: '🫘 Proteins',
+    kw: ['tofu','dal','lentil','moong','masoor','urad','toor','arhar','rajma','kidney bean','black bean','navy bean','soybean','tempeh','edamame','legume','peanut','almond','cashew','walnut','sesame','sunflower seed','pumpkin seed'] },
+  { id: 'pantry', label: '🫙 Pantry', kw: [] },
+];
+
+/* ── System prompt ── */
+const SYSTEM = `You are a meal planner for a 10-month-old vegetarian baby.
+
+STRICT RULES — no exceptions:
+1. VEGETARIAN ONLY. No meat, fish, seafood, gelatin. ABSOLUTELY NO besan (chickpea flour / gram flour) — confirmed chickpea allergy. No chickpeas in any form.
+2. HAND-HELD FINGER FOODS ONLY. Every item must be self-feedable — a piece the baby picks up and gums independently. No purées, no spoon-fed dishes, no loose sauces.
+3. TEXTURE: soft inside (gummable without teeth), holds shape in small hands. No hard, crunchy, crumbly, or sticky foods.
+4. GHEE DAILY — at least one meal per day must include ghee.
+5. UNDER 30 MINUTES — total prep + cook time ≤ 30 min per recipe.
+6. SAFETY: No honey (botulism), no whole nuts (choking), no raw hard vegetables, no added salt, no refined sugar. Cow milk fine in cooking. Piece size: adult thumb tip.
+7. PROTEINS: tofu, paneer, eggs, cheese, yogurt (baked in), dal-based patties (no besan), well-mashed legumes inside baked shell.
+
+Return ONLY a raw JSON object — no markdown fences, no explanation, nothing before or after the opening brace:
+{
+  "plan": {
+    "Mon": {
+      "breakfast": {"name": "2–4 word name", "emoji": "🍌", "time": "15 min", "recipe": "Step-by-step plain text, each step on its own numbered line", "ingredients": ["1 ripe banana", "1 tsp ghee"]},
+      "lunch":   { same shape },
+      "dinner":  { same shape }
+    },
+    "Tue": { ... }, "Wed": { ... }, "Thu": { ... }, "Fri": { ... }, "Sat": { ... }, "Sun": { ... }
+  },
+  "grocery": ["consolidated deduplicated ingredient list for the full week"]
+}`;
+
+/* ── State ── */
+let plan       = null;
+let mealStatus = {};   // key: "Mon.breakfast" → "made"|"skipped"
+let swapSrc    = null; // { day, meal, cell }
+let dragSrc    = null; // { day, meal }
+
+/* ── Init ── */
+window.addEventListener('load', () => {
+  setWeekLabel();
+  buildEmptyGrid();
+  loadStatus();
+
+  const saved = localStorage.getItem('mealPlan_v2');
+  if (saved) {
+    try {
+      plan = JSON.parse(saved);
+      fillGrid(plan);
+      fillGrocery(plan);
+      document.getElementById('genBtn').innerHTML = '<span>✨</span> Regenerate';
+    } catch { localStorage.removeItem('mealPlan_v2'); }
+  }
+
+  if (!localStorage.getItem('ak')) openModal();
+  document.getElementById('keyInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveKey(); });
+
+  setupGridEvents();
+
+  document.addEventListener('click', e => {
+    if (swapSrc && !e.target.closest('#grid')) clearSwapMode();
+  });
+});
+
+/* ── Week label ── */
+function setWeekLabel() {
+  const mon = monday(new Date()), sun = new Date(mon);
+  sun.setDate(mon.getDate() + 6);
+  const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  document.getElementById('weekLbl').textContent = `${fmt(mon)} – ${fmt(sun)}`;
+}
+
+function monday(d) {
+  const m = new Date(d);
+  m.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  m.setHours(0, 0, 0, 0);
+  return m;
+}
+
+/* ── Build empty grid ── */
+function buildEmptyGrid() {
+  const g = document.getElementById('grid');
+  g.innerHTML = '';
+  g.appendChild(mk('div', 'g-corner'));
+
+  const today = new Date(), mon = monday(today);
+
+  DAYS.forEach((day, i) => {
+    const d = new Date(mon);
+    d.setDate(mon.getDate() + i);
+    const isToday = d.toDateString() === today.toDateString();
+    const h = mk('div', `g-day${isToday ? ' today' : ''}`);
+    h.dataset.dayIdx = i;
+    h.dataset.day = day;
+    h.innerHTML = `${day}<span class="g-date">${d.getMonth()+1}/${d.getDate()}</span>`;
+    g.appendChild(h);
+  });
+
+  MEALS.forEach(meal => {
+    const lbl = mk('div', 'g-lbl');
+    lbl.textContent = LABELS[meal];
+    g.appendChild(lbl);
+    DAYS.forEach(day => {
+      const cell = mk('div', 'g-cell');
+      cell.dataset.day = day;
+      cell.dataset.meal = meal;
+      cell.innerHTML = '<span style="font-size:22px;opacity:.15">·</span>';
+      g.appendChild(cell);
+    });
+  });
+}
+
+/* ── Render a single cell ── */
+function renderCell(cell, day, meal) {
+  const m = plan?.plan?.[day]?.[meal];
+  const st = mealStatus[`${day}.${meal}`] || '';
+
+  cell.dataset.day  = day;
+  cell.dataset.meal = meal;
+
+  if (!m) {
+    cell.className = 'g-cell';
+    cell.draggable = false;
+    cell.innerHTML = '<span style="font-size:22px;opacity:.15">·</span>';
+    return;
+  }
+
+  cell.className = `g-cell filled${st ? ` st-${st}` : ''}`;
+  cell.draggable = true;
+  cell.innerHTML = `
+    <button class="c-handle" title="Drag or tap to swap">⠿</button>
+    <span class="c-emoji">${esc(m.emoji || '🍽️')}</span>
+    <span class="c-name">${esc(m.name || '')}</span>
+    <span class="c-time">${esc(m.time || '')}</span>
+    <div class="c-status-bar">
+      <button class="c-status-btn${st === 'made'    ? ' active' : ''}" data-status="made"    title="Mark as made">✅</button>
+      <button class="c-status-btn${st === 'skipped' ? ' active' : ''}" data-status="skipped" title="Mark as skipped">⏭️</button>
+    </div>`;
+}
+
+function getCellEl(day, meal) {
+  const di = DAYS.indexOf(day), mi = MEALS.indexOf(meal);
+  if (di < 0 || mi < 0) return null;
+  return document.querySelectorAll('.g-cell')[mi * 7 + di];
+}
+
+/* ── Fill entire grid ── */
+function fillGrid(p) {
+  buildEmptyGrid();
+  MEALS.forEach((meal, mi) => {
+    DAYS.forEach((day, di) => {
+      const cell = document.querySelectorAll('.g-cell')[mi * 7 + di];
+      if (cell) renderCell(cell, day, meal);
+    });
+  });
+}
+
+/* ── Event delegation on grid ── */
+function setupGridEvents() {
+  const grid = document.getElementById('grid');
+  const clickTimers = new Map();
+
+  /* Day header click → day view */
+  grid.addEventListener('click', e => {
+    const dayHdr = e.target.closest('.g-day');
+    if (dayHdr) {
+      const day = dayHdr.dataset.day;
+      const idx = parseInt(dayHdr.dataset.dayIdx, 10);
+      if (plan?.plan?.[day]) openDaySheet(day, idx);
+      return;
+    }
+
+    const handle = e.target.closest('.c-handle');
+    const statusBtn = e.target.closest('.c-status-btn');
+    const cell = e.target.closest('.g-cell.filled');
+
+    if (handle) {
+      const c = e.target.closest('.g-cell.filled');
+      if (c) handleSwapTap(c.dataset.day, c.dataset.meal, c);
+      return;
+    }
+
+    if (statusBtn) {
+      e.stopPropagation();
+      const c = statusBtn.closest('.g-cell.filled');
+      if (c) markMeal(c.dataset.day, c.dataset.meal, statusBtn.dataset.status);
+      return;
+    }
+
+    if (!cell) {
+      if (swapSrc) clearSwapMode();
+      return;
+    }
+
+    const { day, meal } = cell.dataset;
+
+    if (swapSrc) {
+      if (swapSrc.day === day && swapSrc.meal === meal) clearSwapMode();
+      else { swapMeals(swapSrc.day, swapSrc.meal, day, meal); clearSwapMode(); }
+      return;
+    }
+
+    // Single-click with dblclick disambiguation
+    const key = `${day}.${meal}`;
+    if (clickTimers.has(key)) {
+      clearTimeout(clickTimers.get(key));
+      clickTimers.delete(key);
+      return;
+    }
+    const t = setTimeout(() => {
+      clickTimers.delete(key);
+      const m = plan?.plan?.[day]?.[meal];
+      if (m) openRecipeSheet(m, meal, day);
+    }, 220);
+    clickTimers.set(key, t);
+  });
+
+  /* Double-click → edit name */
+  grid.addEventListener('dblclick', e => {
+    if (e.target.closest('.c-handle') || e.target.closest('.c-status-btn')) return;
+    const cell = e.target.closest('.g-cell.filled');
+    if (!cell) return;
+    const { day, meal } = cell.dataset;
+    const key = `${day}.${meal}`;
+    if (clickTimers.has(key)) { clearTimeout(clickTimers.get(key)); clickTimers.delete(key); }
+    enterEditMode(cell, day, meal);
+  });
+
+  /* Long-press (mobile) → edit name */
+  let pressTimer = null, pressCell = null;
+  grid.addEventListener('touchstart', e => {
+    const c = e.target.closest('.g-cell.filled');
+    if (!c || e.target.closest('.c-handle') || e.target.closest('.c-status-btn')) return;
+    pressCell = c;
+    pressTimer = setTimeout(() => {
+      pressTimer = null;
+      enterEditMode(pressCell, pressCell.dataset.day, pressCell.dataset.meal);
+    }, 600);
+  }, { passive: true });
+  grid.addEventListener('touchend',  () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } });
+  grid.addEventListener('touchmove', () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } });
+
+  /* HTML5 drag-and-drop */
+  grid.addEventListener('dragstart', e => {
+    const cell = e.target.closest('.g-cell.filled');
+    if (!cell) return;
+    dragSrc = { day: cell.dataset.day, meal: cell.dataset.meal };
+    cell.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', `${dragSrc.day}.${dragSrc.meal}`);
+  });
+  grid.addEventListener('dragend', () => {
+    document.querySelectorAll('.g-cell.dragging, .g-cell.drag-over').forEach(c => {
+      c.classList.remove('dragging', 'drag-over');
+    });
+    dragSrc = null;
+  });
+  grid.addEventListener('dragover', e => {
+    const cell = e.target.closest('.g-cell.filled');
+    if (!cell || !dragSrc) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('.g-cell.drag-over').forEach(c => { if (c !== cell) c.classList.remove('drag-over'); });
+    cell.classList.add('drag-over');
+  });
+  grid.addEventListener('dragleave', e => {
+    const cell = e.target.closest('.g-cell');
+    if (cell && !cell.contains(e.relatedTarget)) cell.classList.remove('drag-over');
+  });
+  grid.addEventListener('drop', e => {
+    e.preventDefault();
+    const cell = e.target.closest('.g-cell.filled');
+    if (!cell || !dragSrc) return;
+    cell.classList.remove('drag-over');
+    const { day, meal } = cell.dataset;
+    if (dragSrc.day !== day || dragSrc.meal !== meal) swapMeals(dragSrc.day, dragSrc.meal, day, meal);
+    dragSrc = null;
+  });
+}
+
+/* ── Swap mode ── */
+function handleSwapTap(day, meal, cell) {
+  if (!swapSrc) {
+    swapSrc = { day, meal, cell };
+    cell.classList.add('swap-sel');
+    document.getElementById('swapHint').classList.add('visible');
+  } else if (swapSrc.day === day && swapSrc.meal === meal) {
+    clearSwapMode();
+  } else {
+    swapMeals(swapSrc.day, swapSrc.meal, day, meal);
+    clearSwapMode();
+  }
+}
+
+function clearSwapMode() {
+  if (swapSrc?.cell) swapSrc.cell.classList.remove('swap-sel');
+  swapSrc = null;
+  document.getElementById('swapHint').classList.remove('visible');
+}
+
+function swapMeals(d1, m1, d2, m2) {
+  if (!plan?.plan?.[d1]?.[m1] || !plan?.plan?.[d2]?.[m2]) return;
+
+  const tmp = plan.plan[d1][m1];
+  plan.plan[d1][m1] = plan.plan[d2][m2];
+  plan.plan[d2][m2] = tmp;
+
+  const k1 = `${d1}.${m1}`, k2 = `${d2}.${m2}`;
+  const ts = mealStatus[k1];
+  if (mealStatus[k2] !== undefined) mealStatus[k1] = mealStatus[k2]; else delete mealStatus[k1];
+  if (ts !== undefined) mealStatus[k2] = ts; else delete mealStatus[k2];
+
+  localStorage.setItem('mealPlan_v2', JSON.stringify(plan));
+  saveStatus();
+
+  const c1 = getCellEl(d1, m1), c2 = getCellEl(d2, m2);
+  if (c1) renderCell(c1, d1, m1);
+  if (c2) renderCell(c2, d2, m2);
+}
+
+/* ── Edit mode ── */
+function enterEditMode(cell, day, meal) {
+  if (!plan?.plan?.[day]?.[meal]) return;
+  const nameEl = cell.querySelector('.c-name');
+  if (!nameEl) return;
+
+  const oldName = plan.plan[day][meal].name || '';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = oldName;
+  input.className = 'cell-edit-input';
+  input.maxLength = 40;
+  input.addEventListener('click',   e => e.stopPropagation());
+  input.addEventListener('dblclick', e => e.stopPropagation());
+  nameEl.replaceWith(input);
+  input.focus(); input.select();
+
+  const save = () => {
+    if (!plan?.plan?.[day]?.[meal]) return;
+    plan.plan[day][meal].name = input.value.trim() || oldName;
+    localStorage.setItem('mealPlan_v2', JSON.stringify(plan));
+    renderCell(cell, day, meal);
+  };
+  input.addEventListener('blur', save, { once: true });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { input.value = oldName; input.blur(); }
+    e.stopPropagation();
+  });
+}
+
+/* ── Status ── */
+function markMeal(day, meal, status) {
+  const key = `${day}.${meal}`;
+  if (mealStatus[key] === status) delete mealStatus[key];
+  else mealStatus[key] = status;
+  saveStatus();
+  const cell = getCellEl(day, meal);
+  if (cell) renderCell(cell, day, meal);
+}
+function saveStatus() { localStorage.setItem('mealStatus_v1', JSON.stringify(mealStatus)); }
+function loadStatus() {
+  const s = localStorage.getItem('mealStatus_v1');
+  if (s) try { mealStatus = JSON.parse(s); } catch {}
+}
+
+/* ── Grocery ── */
+function categorize(ing) {
+  const lower = ing.toLowerCase();
+  for (const cat of CATEGORIES) {
+    if (cat.kw.some(k => lower.includes(k))) return cat.id;
+  }
+  return 'pantry';
+}
+
+function aggregateIngredients(p) {
+  const seen = new Set(), out = [];
+  DAYS.forEach(day => MEALS.forEach(meal => {
+    (p.plan?.[day]?.[meal]?.ingredients || []).forEach(ing => {
+      if (!seen.has(ing.toLowerCase())) { seen.add(ing.toLowerCase()); out.push(ing); }
+    });
+  }));
+  return out;
+}
+
+function fillGrocery(p) {
+  const items = p.grocery?.length ? p.grocery : aggregateIngredients(p);
+  const body = document.getElementById('groceryBody');
+  body.innerHTML = '';
+
+  const groups = {};
+  CATEGORIES.forEach(c => groups[c.id] = []);
+  items.forEach(item => groups[categorize(item)].push(item));
+
+  CATEGORIES.forEach(cat => {
+    if (!groups[cat.id].length) return;
+    const sec = mk('div', 'grocery-section');
+    const hdr = mk('div', 'grocery-cat-hdr');
+    hdr.textContent = cat.label;
+    sec.appendChild(hdr);
+    const grid = mk('div', 'grocery-items');
+    groups[cat.id].forEach(item => {
+      const label = mk('label', 'grocery-item');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.onchange = () => label.classList.toggle('done', cb.checked);
+      const span = document.createElement('span');
+      span.textContent = item;
+      label.appendChild(cb); label.appendChild(span);
+      grid.appendChild(label);
+    });
+    sec.appendChild(grid);
+    body.appendChild(sec);
+  });
+
+  document.getElementById('grocerySec').style.display = items.length ? '' : 'none';
+}
+
+/* ── Generate ── */
+async function generate() {
+  const key = localStorage.getItem('ak');
+  if (!key) { openModal(); return; }
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Generating…';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 8192,
+        system: SYSTEM,
+        messages: [{ role: 'user', content: 'Generate a complete 7-day meal plan for this week. Return only the JSON.' }]
+      })
+    });
+
+    if (!resp.ok) {
+      const e = await resp.json().catch(() => ({}));
+      throw new Error(e.error?.message || `HTTP ${resp.status}`);
+    }
+
+    const data  = await resp.json();
+    const raw   = data.content[0].text.trim();
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Response did not contain valid JSON');
+
+    plan = JSON.parse(match[0]);
+    mealStatus = {};
+    saveStatus();
+    localStorage.setItem('mealPlan_v2', JSON.stringify(plan));
+
+    fillGrid(plan);
+    fillGrocery(plan);
+    btn.innerHTML = '<span>✨</span> Regenerate';
+
+  } catch (err) {
+    const msg = err.message.includes('401')
+      ? 'Invalid API key — tap ⚙️ to update it.'
+      : 'Generation failed: ' + err.message;
+    alert(msg);
+    btn.innerHTML = plan ? '<span>✨</span> Regenerate' : '<span>✨</span> Generate Plan';
+  }
+
+  btn.disabled = false;
+}
+
+/* ── API Key ── */
+function openModal() {
+  document.getElementById('keyInput').value = localStorage.getItem('ak') || '';
+  document.getElementById('backdrop').classList.remove('hidden');
+  setTimeout(() => document.getElementById('keyInput').focus(), 60);
+}
+function saveKey() {
+  const val = document.getElementById('keyInput').value.trim();
+  if (!val.startsWith('sk-ant-')) { alert('Please enter a valid Anthropic API key (starts with sk-ant-)'); return; }
+  localStorage.setItem('ak', val);
+  document.getElementById('backdrop').classList.add('hidden');
+}
+
+/* ── Recipe sheet ── */
+function openRecipeSheet(m, meal, day) {
+  document.getElementById('shEmoji').textContent = m.emoji || '🍽️';
+  document.getElementById('shName').textContent  = m.name  || '';
+  document.getElementById('shMeta').textContent  = `${day} · ${LABELS[meal] || meal} · ${m.time || ''}`;
+
+  const ingList = document.getElementById('shIngredients');
+  ingList.innerHTML = '';
+  (m.ingredients || []).forEach(ing => {
+    const div = mk('div', 'ing-item');
+    div.innerHTML = `<div class="ing-dot"></div><span>${esc(ing)}</span>`;
+    ingList.appendChild(div);
+  });
+
+  document.getElementById('shRecipe').textContent = m.recipe || '';
+
+  const bd = document.getElementById('recipeBd');
+  bd.classList.remove('hidden');
+  document.getElementById('recipeSheet').scrollTop = 0;
+}
+
+/* ── Day sheet ── */
+function openDaySheet(day, dayIdx) {
+  const mon = monday(new Date());
+  const d = new Date(mon);
+  d.setDate(mon.getDate() + dayIdx);
+  const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  document.getElementById('dayShName').textContent = day;
+  document.getElementById('dayShMeta').textContent = dateStr;
+
+  const body = document.getElementById('dayShBody');
+  body.innerHTML = '';
+
+  const dayIngs = new Set();
+  let firstMeal = true;
+
+  MEALS.forEach(meal => {
+    const m = plan?.plan?.[day]?.[meal];
+    if (!m) return;
+
+    if (!firstMeal) {
+      const hr = mk('hr', 'day-divider');
+      body.appendChild(hr);
+    }
+    firstMeal = false;
+
+    const sec = mk('div', 'day-meal-sec');
+
+    const hdr = mk('div', 'day-meal-hdr');
+    const iconEl = mk('div', 'day-meal-icon');
+    iconEl.textContent = MEAL_ICONS[meal];
+    const info = mk('div', '');
+    const lbl = mk('div', 'day-meal-lbl'); lbl.textContent = LABELS[meal].toUpperCase();
+    const name = mk('div', 'day-meal-name'); name.textContent = `${m.emoji || ''} ${m.name || ''}`.trim();
+    const time = mk('div', 'day-meal-time'); time.textContent = m.time || '';
+    info.appendChild(lbl); info.appendChild(name); info.appendChild(time);
+    hdr.appendChild(iconEl); hdr.appendChild(info);
+    sec.appendChild(hdr);
+
+    const ingSec = mk('div', 'r-sec'); ingSec.textContent = 'Ingredients';
+    sec.appendChild(ingSec);
+
+    const ingList = mk('div', 'ing-list');
+    (m.ingredients || []).forEach(ing => {
+      dayIngs.add(ing);
+      const div = mk('div', 'ing-item');
+      div.innerHTML = `<div class="ing-dot"></div><span>${esc(ing)}</span>`;
+      ingList.appendChild(div);
+    });
+    sec.appendChild(ingList);
+
+    const stepSec = mk('div', 'r-sec'); stepSec.textContent = 'Steps';
+    sec.appendChild(stepSec);
+    const steps = mk('div', 'recipe-text');
+    steps.textContent = m.recipe || '';
+    sec.appendChild(steps);
+
+    body.appendChild(sec);
+  });
+
+  // Day grocery list
+  if (dayIngs.size) {
+    const hr = mk('hr', 'day-divider'); body.appendChild(hr);
+    const grocSec = mk('div', 'r-sec'); grocSec.textContent = "Today's Groceries";
+    body.appendChild(grocSec);
+    const grocGrid = mk('div', 'day-grocery-grid');
+    [...dayIngs].forEach(item => {
+      const label = mk('label', 'grocery-item');
+      const cb = document.createElement('input'); cb.type = 'checkbox';
+      cb.onchange = () => label.classList.toggle('done', cb.checked);
+      const span = document.createElement('span'); span.textContent = item;
+      label.appendChild(cb); label.appendChild(span);
+      grocGrid.appendChild(label);
+    });
+    body.appendChild(grocGrid);
+  }
+
+  document.getElementById('dayBd').classList.remove('hidden');
+  document.getElementById('daySheet').scrollTop = 0;
+}
+
+/* ── Close sheet ── */
+function closeSheet(id, e) {
+  if (!e || e.target.id === id) {
+    document.getElementById(id).classList.add('hidden');
+  }
+}
+
+/* ── Helpers ── */
+function mk(tag, cls) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  return e;
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
