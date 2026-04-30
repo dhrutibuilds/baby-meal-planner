@@ -18,10 +18,7 @@
       --bdr:   #fed7aa;
     }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg); color: var(--txt);
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--txt); }
 
     /* ── Header ── */
     .hdr {
@@ -46,17 +43,13 @@
     /* ── Main ── */
     .main { padding: 16px 16px max(28px, env(safe-area-inset-bottom)); }
 
-    .top-bar {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 14px;
-    }
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
     .week-lbl { font-size: 13px; color: var(--muted); font-weight: 500; }
 
     .gen-btn {
       display: flex; align-items: center; gap: 7px;
       padding: 11px 18px; background: var(--or); color: #fff;
-      border: none; border-radius: 14px;
-      font-size: 14px; font-weight: 600; font-family: inherit;
+      border: none; border-radius: 14px; font-size: 14px; font-weight: 600; font-family: inherit;
       cursor: pointer; box-shadow: 0 3px 12px rgba(249,115,22,.35);
       transition: background .15s, transform .15s;
     }
@@ -65,182 +58,129 @@
     .gen-btn:disabled { opacity: .6; cursor: default; transform: none; box-shadow: none; }
 
     /* ── Grid ── */
-    .grid-scroll {
-      overflow-x: auto; -webkit-overflow-scrolling: touch;
-      margin: 0 -16px; padding: 0 16px 8px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: 60px repeat(7, minmax(116px, 1fr));
-      gap: 5px; min-width: 872px;
-    }
+    .grid-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -16px; padding: 0 16px 8px; }
+    .grid { display: grid; grid-template-columns: 60px repeat(7, minmax(116px, 1fr)); gap: 5px; min-width: 872px; }
     .g-corner { /* spacer */ }
 
     .g-day {
-      text-align: center; padding: 7px 4px;
-      font-size: 12px; font-weight: 700; color: var(--or-dk);
-      border-radius: 8px; cursor: pointer; user-select: none;
-      transition: background .15s;
+      text-align: center; padding: 7px 4px; font-size: 12px; font-weight: 700; color: var(--or-dk);
+      border-radius: 8px; cursor: pointer; user-select: none; transition: background .15s;
     }
     .g-day:hover { background: var(--or-lt); }
     .g-day.today { background: var(--or-lt); color: var(--or); }
     .g-day.today:hover { filter: brightness(.96); }
-    .g-date {
-      display: block; font-size: 10.5px; font-weight: 400;
-      color: var(--muted); margin-top: 1px;
-    }
+    .g-date { display: block; font-size: 10.5px; font-weight: 400; color: var(--muted); margin-top: 1px; }
 
     .g-lbl {
-      display: flex; align-items: center; justify-content: flex-end;
-      padding-right: 6px;
-      font-size: 10px; font-weight: 700; color: var(--muted);
-      text-transform: uppercase; letter-spacing: .5px;
+      display: flex; align-items: center; justify-content: flex-end; padding-right: 6px;
+      font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px;
     }
 
     .g-cell {
-      background: var(--card); border: 2px dashed var(--bdr);
-      border-radius: 11px; padding: 8px 6px 6px;
-      min-height: 112px;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      text-align: center; gap: 2px;
-      position: relative;
+      background: var(--card); border: 2px dashed var(--bdr); border-radius: 11px; padding: 8px 6px 6px;
+      min-height: 112px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; gap: 2px; position: relative;
       transition: box-shadow .2s, background .2s, border-color .2s, opacity .2s;
     }
     .g-cell.filled {
-      border: 2px solid transparent;
-      box-shadow: 0 1px 8px rgba(0,0,0,.09);
-      cursor: pointer; justify-content: flex-start;
-      padding-top: 26px;
+      border: 2px solid transparent; box-shadow: 0 1px 8px rgba(0,0,0,.09);
+      cursor: pointer; justify-content: flex-start; padding-top: 26px;
     }
     .g-cell.filled:hover { box-shadow: 0 2px 14px rgba(0,0,0,.13); }
 
-    /* Drag handle */
     .c-handle {
-      position: absolute; top: 4px; left: 5px;
-      width: 20px; height: 20px;
-      border: none; background: none; padding: 0;
-      color: var(--muted); font-size: 13px; cursor: grab;
+      position: absolute; top: 4px; left: 5px; width: 20px; height: 20px;
+      border: none; background: none; padding: 0; color: var(--muted); font-size: 13px; cursor: grab;
       display: flex; align-items: center; justify-content: center;
-      border-radius: 4px; opacity: 0; transition: opacity .15s, background .15s;
-      z-index: 2; touch-action: none;
+      border-radius: 4px; opacity: 0; transition: opacity .15s, background .15s; z-index: 2; touch-action: none;
     }
     .g-cell:hover .c-handle { opacity: .65; }
     .c-handle:hover { opacity: 1 !important; background: rgba(0,0,0,.06); }
     .c-handle:active { cursor: grabbing; }
 
-    /* Cell content */
     .c-emoji { font-size: 20px; line-height: 1.2; }
     .c-name  { font-size: 11px; font-weight: 600; line-height: 1.3; color: var(--txt); }
     .c-time  { font-size: 9.5px; color: var(--muted); }
 
-    /* Status bar */
     .c-status-bar { display: flex; gap: 4px; margin-top: auto; padding-top: 5px; }
     .c-status-btn {
-      width: 26px; height: 22px;
-      border: none; border-radius: 6px; background: #f0ece5;
-      font-size: 11px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
+      width: 26px; height: 22px; border: none; border-radius: 6px; background: #f0ece5;
+      font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;
       opacity: .4; transition: opacity .15s, background .15s, transform .1s;
     }
     .c-status-btn:hover { opacity: 1; }
     .c-status-btn.active { opacity: 1; background: var(--or-lt); }
     .c-status-btn:active { transform: scale(.88); }
 
-    /* Cell status tints */
-    .g-cell.st-made {
-      background: #f0fdf4 !important; border-color: #bbf7d0 !important;
-      box-shadow: 0 1px 8px rgba(34,197,94,.12) !important;
-    }
-    .g-cell.st-skipped {
-      background: #f5f5f5 !important; border-color: #e5e5e5 !important;
-      box-shadow: none !important; opacity: .58;
-    }
+    .g-cell.st-made    { background: #f0fdf4 !important; border-color: #bbf7d0 !important; box-shadow: 0 1px 8px rgba(34,197,94,.12) !important; }
+    .g-cell.st-skipped { background: #f5f5f5 !important; border-color: #e5e5e5 !important; box-shadow: none !important; opacity: .58; }
 
-    /* DnD states */
-    .g-cell.dragging { opacity: .3; }
-    .g-cell.drag-over {
-      border: 2px dashed var(--or) !important;
-      background: var(--or-lt) !important;
-    }
-    .g-cell.swap-sel {
-      border: 2px solid var(--or) !important;
-      animation: swapPulse .9s ease-in-out infinite;
-    }
+    .g-cell.dragging  { opacity: .3; }
+    .g-cell.drag-over { border: 2px dashed var(--or) !important; background: var(--or-lt) !important; }
+    .g-cell.swap-sel  { border: 2px solid var(--or) !important; animation: swapPulse .9s ease-in-out infinite; }
     @keyframes swapPulse {
       0%,100% { box-shadow: 0 0 0 3px rgba(249,115,22,.3); }
       50%      { box-shadow: 0 0 0 6px rgba(249,115,22,.08); }
     }
 
-    /* Inline edit input */
     .cell-edit-input {
-      width: 93%; border: 1.5px solid var(--or); border-radius: 6px;
-      padding: 3px 6px; font-size: 11px; font-weight: 600;
-      font-family: inherit; text-align: center; background: #fff; outline: none;
+      width: 93%; border: 1.5px solid var(--or); border-radius: 6px; padding: 3px 6px;
+      font-size: 11px; font-weight: 600; font-family: inherit; text-align: center; background: #fff; outline: none;
     }
 
-    /* Spinner */
     @keyframes spin { to { transform: rotate(360deg); } }
-    .spinner {
-      width: 16px; height: 16px;
-      border: 2.5px solid rgba(255,255,255,.4);
-      border-top-color: #fff; border-radius: 50%;
-      animation: spin .7s linear infinite;
-    }
+    .spinner      { width: 16px; height: 16px; border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+    .spinner-dark { width: 28px; height: 28px; border: 3px solid rgba(249,115,22,.2); border-top-color: var(--or); border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto; }
 
     /* ── Grocery ── */
-    .sec-title {
-      font-size: 16px; font-weight: 700; margin: 24px 0 12px;
-      display: flex; align-items: center; gap: 7px;
+    .sec-title { font-size: 16px; font-weight: 700; margin: 24px 0 12px; display: flex; align-items: center; gap: 7px; }
+    .copy-btn {
+      margin-left: auto; padding: 5px 11px; background: var(--or-lt); color: var(--or-dk);
+      border: 1.5px solid var(--bdr); border-radius: 8px; font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: background .15s;
     }
+    .copy-btn:hover { background: var(--bdr); }
+
     .grocery-section { margin-bottom: 18px; }
-    .grocery-cat-hdr {
-      font-size: 12px; font-weight: 700; color: var(--muted);
-      letter-spacing: .4px; margin-bottom: 8px; padding-left: 2px;
-    }
-    .grocery-items {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
-    }
+    .grocery-cat-hdr { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .4px; margin-bottom: 8px; padding-left: 2px; }
+    .grocery-items { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     @media (min-width: 480px) { .grocery-items { grid-template-columns: repeat(3,1fr); } }
     .grocery-item {
-      display: flex; align-items: center; gap: 8px;
-      background: var(--card); border-radius: 10px; padding: 9px 12px;
-      font-size: 13px; box-shadow: 0 1px 4px rgba(0,0,0,.06);
-      cursor: pointer; user-select: none;
+      display: flex; align-items: center; gap: 8px; background: var(--card);
+      border-radius: 10px; padding: 9px 12px; font-size: 13px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06); cursor: pointer; user-select: none;
     }
-    .grocery-item input[type=checkbox] {
-      width: 16px; height: 16px; accent-color: var(--or);
-      flex-shrink: 0; cursor: pointer;
-    }
+    .grocery-item input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--or); flex-shrink: 0; cursor: pointer; }
     .grocery-item.done span { text-decoration: line-through; color: var(--muted); }
 
-    /* ── API Key modal ── */
+    /* ── Settings modal ── */
     .backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,.52);
       backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 200; padding: 20px;
+      display: flex; align-items: center; justify-content: center; z-index: 200; padding: 20px;
     }
     .backdrop.hidden { display: none; }
-    .modal {
-      background: var(--card); border-radius: 22px;
-      padding: 26px 22px 22px; width: 100%; max-width: 375px;
-      box-shadow: 0 24px 64px rgba(0,0,0,.25);
-    }
-    .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-    .modal p  { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
-    .modal input {
+    .modal { background: var(--card); border-radius: 22px; padding: 26px 22px 22px; width: 100%; max-width: 375px; box-shadow: 0 24px 64px rgba(0,0,0,.25); }
+    .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+    .modal-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
+    .modal input[type=password] {
       display: block; width: 100%; padding: 12px 14px;
       border: 2px solid #e5e7eb; border-radius: 12px;
       font-size: 14px; font-family: monospace; color: var(--txt);
-      margin-bottom: 12px; transition: border-color .2s;
+      margin-bottom: 14px; transition: border-color .2s;
     }
-    .modal input:focus { outline: none; border-color: var(--or); }
+    .modal input[type=password]:focus { outline: none; border-color: var(--or); }
+    .setting-row { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+    .setting-label { flex: 1; font-size: 14px; font-weight: 600; }
+    .age-input {
+      width: 64px; padding: 9px 10px; border: 2px solid #e5e7eb; border-radius: 10px;
+      font-size: 14px; font-family: inherit; color: var(--txt); text-align: center; transition: border-color .2s;
+    }
+    .age-input:focus { outline: none; border-color: var(--or); }
+    .setting-unit { font-size: 13px; color: var(--muted); }
     .modal-btn {
-      display: block; width: 100%; padding: 13px;
-      background: var(--or); color: #fff; border: none;
-      border-radius: 12px; font-size: 15px; font-weight: 600;
-      font-family: inherit; cursor: pointer; transition: background .15s;
+      display: block; width: 100%; padding: 13px; background: var(--or); color: #fff; border: none;
+      border-radius: 12px; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; transition: background .15s;
     }
     .modal-btn:hover { background: var(--or-dk); }
     .modal-hint { text-align: center; margin-top: 10px; font-size: 11.5px; color: var(--muted); }
@@ -253,66 +193,185 @@
     }
     .sheet-bd.hidden { display: none; }
     .sheet {
-      background: var(--card); border-radius: 22px 22px 0 0;
-      width: 100%; max-height: 86vh;
-      overflow-y: auto; -webkit-overflow-scrolling: touch;
-      animation: slideUp .28s cubic-bezier(.34,1.2,.64,1);
+      background: var(--card); border-radius: 22px 22px 0 0; width: 100%; max-height: 86vh;
+      overflow-y: auto; -webkit-overflow-scrolling: touch; animation: slideUp .28s cubic-bezier(.34,1.2,.64,1);
     }
-    @keyframes slideUp {
-      from { transform: translateY(100%); opacity: .5; }
-      to   { transform: translateY(0); opacity: 1; }
-    }
+    @keyframes slideUp { from { transform: translateY(100%); opacity: .5; } to { transform: translateY(0); opacity: 1; } }
+
     .sheet-hdr {
-      position: sticky; top: 0; background: var(--card);
-      padding: 16px 18px 12px; border-bottom: 1px solid #f0ece5;
-      display: flex; align-items: flex-start; gap: 12px;
+      position: sticky; top: 0; background: var(--card); padding: 16px 18px 12px;
+      border-bottom: 1px solid #f0ece5; display: flex; align-items: flex-start; gap: 12px;
     }
     .sh-emoji { font-size: 36px; line-height: 1; flex-shrink: 0; }
     .sh-info  { flex: 1; }
     .sh-name  { font-size: 18px; font-weight: 700; line-height: 1.2; }
     .sh-meta  { font-size: 12px; color: var(--muted); margin-top: 4px; }
     .close-btn {
-      width: 30px; height: 30px; border-radius: 50%;
-      border: none; background: #f0ece5; font-size: 14px;
-      cursor: pointer; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; border-radius: 50%; border: none; background: #f0ece5;
+      font-size: 14px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
     }
     .sheet-body { padding: 16px 18px max(28px, env(safe-area-inset-bottom)); }
 
-    /* Recipe sections */
-    .r-sec {
-      font-size: 11px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .7px;
-      color: var(--or); margin: 18px 0 8px;
-    }
+    .r-sec { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--or); margin: 18px 0 8px; }
     .r-sec:first-child { margin-top: 0; }
     .ing-list { display: flex; flex-direction: column; gap: 5px; }
-    .ing-item {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 14px; padding: 8px 12px;
-      background: var(--or-lt); border-radius: 9px;
-    }
-    .ing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--or); flex-shrink: 0; }
+    .ing-item { display: flex; align-items: center; gap: 8px; font-size: 14px; padding: 8px 12px; background: var(--or-lt); border-radius: 9px; }
+    .ing-dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--or); flex-shrink: 0; }
     .recipe-text { font-size: 14px; line-height: 1.75; color: var(--txt); white-space: pre-wrap; }
+
+    /* Duplicate picker */
+    .dup-section { margin-bottom: 10px; }
+    .dup-meal-label { font-size: 10px; font-weight: 700; color: var(--or); margin-bottom: 5px; letter-spacing: .4px; }
+    .dup-day-row { display: flex; gap: 4px; }
+    .dup-day-btn {
+      flex: 1; border: 1.5px solid var(--bdr); border-radius: 7px; padding: 6px 2px;
+      background: var(--card); font-size: 10px; font-weight: 600; color: var(--txt);
+      cursor: pointer; font-family: inherit; text-align: center; transition: all .15s;
+    }
+    .dup-day-btn.dup-empty:hover  { border-color: var(--or); background: var(--or-lt); }
+    .dup-day-btn.dup-occupied     { border-color: var(--bdr); background: #fff7ed; }
+    .dup-day-btn.dup-occupied:hover { border-color: var(--or); }
+    .dup-day-btn.dup-current      { background: #f5f5f5; border-color: #e5e5e5; color: var(--muted); cursor: not-allowed; }
 
     /* Day view */
     .day-meal-sec { padding-bottom: 4px; }
-    .day-divider { border: none; border-top: 1px solid #f0ece5; margin: 20px 0; }
+    .day-divider  { border: none; border-top: 1px solid #f0ece5; margin: 20px 0; }
     .day-meal-hdr { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
     .day-meal-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
-    .day-meal-lbl {
-      font-size: 10px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .6px; color: var(--or);
-    }
+    .day-meal-lbl  { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--or); }
     .day-meal-name { font-size: 16px; font-weight: 700; margin-top: 2px; }
     .day-meal-time { font-size: 12px; color: var(--muted); margin-top: 2px; }
     .day-grocery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
-    .swap-hint {
-      font-size: 11px; color: var(--or); background: var(--or-lt);
-      border-radius: 8px; padding: 6px 10px; margin-bottom: 10px;
-      text-align: center; display: none;
-    }
+
+    .swap-hint { font-size: 11px; color: var(--or); background: var(--or-lt); border-radius: 8px; padding: 6px 10px; margin-bottom: 10px; text-align: center; display: none; }
     .swap-hint.visible { display: block; }
+
+    /* ── Creative popup ── */
+    .creative-bd {
+      position: fixed; inset: 0; background: rgba(0,0,0,.52);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center; z-index: 310; padding: 20px;
+    }
+    .creative-bd.hidden { display: none; }
+    .creative-popup {
+      background: var(--card); border-radius: 22px; padding: 22px;
+      width: 100%; max-width: 420px; max-height: 88vh; overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(0,0,0,.28); animation: popIn .28s cubic-bezier(.34,1.2,.64,1);
+    }
+    @keyframes popIn { from { transform: scale(.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .creative-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .creative-tag    { font-size: 13px; font-weight: 700; color: var(--or); }
+    .creative-hdr    { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+    .creative-emoji  { font-size: 42px; line-height: 1; flex-shrink: 0; }
+    .creative-name   { font-size: 20px; font-weight: 700; line-height: 1.2; }
+    .creative-time   { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    .creative-footer { border-top: 1px solid #f0ece5; margin-top: 20px; padding-top: 14px; }
+    .creative-retry  {
+      display: block; width: 100%; padding: 11px; background: var(--or-lt); color: var(--or-dk);
+      border: 1.5px solid var(--bdr); border-radius: 12px; font-size: 14px; font-weight: 600;
+      font-family: inherit; cursor: pointer; transition: background .15s;
+    }
+    .creative-retry:hover { background: var(--bdr); }
+
+    /* ── Chat FAB ── */
+    .chat-fab {
+      position: fixed; bottom: max(24px, env(safe-area-inset-bottom)); right: 20px;
+      width: 54px; height: 54px; border-radius: 50%; background: var(--or); color: #fff;
+      border: none; font-size: 22px; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(249,115,22,.45); z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .2s, background .15s;
+    }
+    .chat-fab:hover { background: var(--or-dk); transform: scale(1.05); }
+
+    /* ── Chat drawer ── */
+    .chat-overlay {
+      position: fixed; inset: 0; z-index: 400; display: flex; justify-content: flex-end;
+    }
+    .chat-overlay.hidden { display: none; }
+    .chat-overlay-bg {
+      position: absolute; inset: 0; background: rgba(0,0,0,.3);
+      backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+    }
+
+    .chat-drawer {
+      position: relative; width: min(400px, 100vw); height: 100dvh;
+      background: var(--bg); display: flex; flex-direction: column;
+      box-shadow: -4px 0 30px rgba(0,0,0,.15); animation: slideRight .26s cubic-bezier(.34,1.1,.64,1);
+    }
+    @keyframes slideRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+    .chat-hdr {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: max(14px, env(safe-area-inset-top)) 16px 14px;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      color: #fff; flex-shrink: 0;
+    }
+    .chat-hdr-left { flex: 1; }
+    .chat-hdr-title { font-size: 16px; font-weight: 700; }
+    .chat-hdr-sub   { font-size: 11px; opacity: .8; margin-top: 2px; }
+    .chat-hdr-btns  { display: flex; gap: 6px; }
+    .chat-icon-btn  {
+      width: 30px; height: 30px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,.2); color: #fff; font-size: 14px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .chat-icon-btn:hover { background: rgba(255,255,255,.35); }
+
+    .chat-msgs {
+      flex: 1; overflow-y: auto; padding: 14px 14px 8px;
+      display: flex; flex-direction: column; gap: 10px; -webkit-overflow-scrolling: touch;
+    }
+
+    .chat-welcome { text-align: center; padding: 20px 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .chat-welcome .cw-icon { font-size: 40px; }
+    .chat-welcome h3 { font-size: 15px; font-weight: 700; }
+    .chat-welcome p  { font-size: 13px; color: var(--muted); line-height: 1.5; max-width: 280px; }
+    .chat-chips { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; margin-top: 4px; }
+    .chat-chip {
+      padding: 7px 13px; background: var(--card); border: 1.5px solid var(--bdr);
+      border-radius: 100px; font-size: 12px; color: var(--or-dk); cursor: pointer;
+      font-family: inherit; transition: all .15s;
+    }
+    .chat-chip:hover { background: var(--or); border-color: var(--or); color: #fff; }
+
+    .chat-msg { display: flex; gap: 8px; max-width: 90%; }
+    .chat-msg.user      { align-self: flex-end; flex-direction: row-reverse; }
+    .chat-msg.assistant { align-self: flex-start; }
+    .chat-bubble {
+      padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.55; word-break: break-word;
+    }
+    .chat-msg.user .chat-bubble      { background: var(--or); color: #fff; border-bottom-right-radius: 4px; }
+    .chat-msg.assistant .chat-bubble { background: var(--card); color: var(--txt); box-shadow: 0 1px 6px rgba(0,0,0,.08); border-bottom-left-radius: 4px; }
+
+    .chat-dots { display: flex; gap: 4px; padding: 2px 0; }
+    .chat-dot  { width: 7px; height: 7px; border-radius: 50%; background: #ccc; animation: chatBlink 1.2s infinite; }
+    .chat-dot:nth-child(2) { animation-delay: .2s; }
+    .chat-dot:nth-child(3) { animation-delay: .4s; }
+    @keyframes chatBlink { 0%,80%,100% { opacity:.3; transform:scale(.9); } 40% { opacity:1; transform:scale(1.1); } }
+
+    .chat-bar {
+      display: flex; align-items: flex-end; gap: 8px;
+      padding: 10px 14px max(10px, env(safe-area-inset-bottom));
+      background: var(--card); border-top: 1px solid #f0e8d8; flex-shrink: 0;
+    }
+    #chatInput {
+      flex: 1; border: 1.5px solid var(--bdr); border-radius: 18px; padding: 10px 14px;
+      font-family: inherit; font-size: 14px; color: var(--txt); background: #faf5eb;
+      resize: none; overflow: hidden; min-height: 40px; max-height: 120px; line-height: 1.4;
+      transition: border-color .2s;
+    }
+    #chatInput:focus { outline: none; border-color: var(--or); }
+    #chatInput::placeholder { color: #c7b89a; }
+    .chat-send {
+      width: 40px; height: 40px; border-radius: 50%; background: var(--or); border: none; color: #fff;
+      font-size: 16px; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(249,115,22,.35); transition: background .15s, transform .15s;
+    }
+    .chat-send:hover    { background: var(--or-dk); }
+    .chat-send:disabled { background: #e2d9ce; box-shadow: none; cursor: default; transform: none; }
+    .chat-send svg { width: 17px; height: 17px; fill: #fff; }
   </style>
 </head>
 <body>
@@ -323,22 +382,42 @@
     <h1>Baby Meal Planner</h1>
     <p>Vegetarian · Finger foods · Under 30 min · Ghee daily</p>
   </div>
-  <button class="icon-btn" onclick="openModal()" title="API Key">⚙️</button>
+  <button class="icon-btn" onclick="getCreative()" title="Creative recipe">🎲</button>
+  <button class="icon-btn" onclick="openModal()" title="Settings">⚙️</button>
 </header>
 
-<!-- API Key modal -->
+<!-- Settings modal -->
 <div class="backdrop hidden" id="backdrop">
   <div class="modal">
-    <h2>🔑 Anthropic API Key</h2>
-    <p>Saved only in <strong>this browser's local storage</strong>. Sent directly to Anthropic — never through any third-party server.</p>
+    <h2>⚙️ Settings</h2>
+    <p class="modal-desc">Your API key is saved only in this browser's local storage — sent directly to Anthropic, never through any third-party server.</p>
     <input type="password" id="keyInput" placeholder="sk-ant-api03-…" autocomplete="off" />
-    <button class="modal-btn" onclick="saveKey()">Save Key</button>
-    <p class="modal-hint">Get a key at <strong>console.anthropic.com</strong></p>
+    <div class="setting-row">
+      <label class="setting-label" for="ageInput">👶 Baby's age</label>
+      <input type="number" id="ageInput" class="age-input" min="4" max="36" placeholder="10" />
+      <span class="setting-unit">months</span>
+    </div>
+    <button class="modal-btn" onclick="saveSettings()">Save Settings</button>
+    <p class="modal-hint">Get an API key at <strong>console.anthropic.com</strong></p>
   </div>
 </div>
 
-<!-- Recipe bottom sheet -->
-<div class="sheet-bd hidden" id="recipeBd" onclick="closeSheet('recipeBd', event)">
+<!-- Creative recipe popup -->
+<div class="creative-bd hidden" id="creativeBd" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div class="creative-popup">
+    <div class="creative-topbar">
+      <span class="creative-tag">🎲 Surprise Recipe</span>
+      <button class="close-btn" onclick="document.getElementById('creativeBd').classList.add('hidden')">✕</button>
+    </div>
+    <div id="creativeContent"></div>
+    <div class="creative-footer">
+      <button class="creative-retry" onclick="getCreative()">🎲 Try Another</button>
+    </div>
+  </div>
+</div>
+
+<!-- Recipe sheet -->
+<div class="sheet-bd hidden" id="recipeBd" onclick="closeSheet('recipeBd',event)">
   <div class="sheet" id="recipeSheet">
     <div class="sheet-hdr">
       <div class="sh-emoji" id="shEmoji"></div>
@@ -353,12 +432,14 @@
       <div class="ing-list" id="shIngredients"></div>
       <div class="r-sec">Steps</div>
       <div class="recipe-text" id="shRecipe"></div>
+      <div class="r-sec">Duplicate to…</div>
+      <div id="dupPicker"></div>
     </div>
   </div>
 </div>
 
-<!-- Day view bottom sheet -->
-<div class="sheet-bd hidden" id="dayBd" onclick="closeSheet('dayBd', event)">
+<!-- Day view sheet -->
+<div class="sheet-bd hidden" id="dayBd" onclick="closeSheet('dayBd',event)">
   <div class="sheet" id="daySheet">
     <div class="sheet-hdr">
       <div class="sh-info">
@@ -371,22 +452,59 @@
   </div>
 </div>
 
+<!-- Chat overlay -->
+<div class="chat-overlay hidden" id="chatOverlay">
+  <div class="chat-overlay-bg" onclick="closeChat()"></div>
+  <div class="chat-drawer">
+    <div class="chat-hdr">
+      <div class="chat-hdr-left">
+        <div class="chat-hdr-title">🥕 Meal Assistant</div>
+        <div class="chat-hdr-sub">Ask about recipes, swaps, or ideas</div>
+      </div>
+      <div class="chat-hdr-btns">
+        <button class="chat-icon-btn" onclick="clearChat()" title="Clear chat">🗑️</button>
+        <button class="chat-icon-btn" onclick="closeChat()">✕</button>
+      </div>
+    </div>
+    <div class="chat-msgs" id="chatMsgs">
+      <div class="chat-welcome" id="chatWelcome">
+        <div class="cw-icon">👶</div>
+        <h3>Hi! I know your plan</h3>
+        <p>Ask me anything about this week's meals, recipe swaps, or new ideas.</p>
+        <div class="chat-chips">
+          <button class="chat-chip" onclick="useChip(this)">What's for dinner Sunday?</button>
+          <button class="chat-chip" onclick="useChip(this)">Suggest a high-iron swap</button>
+          <button class="chat-chip" onclick="useChip(this)">Quick snack under 10 min</button>
+          <button class="chat-chip" onclick="useChip(this)">Which meals have ghee?</button>
+        </div>
+      </div>
+    </div>
+    <div class="chat-bar">
+      <textarea id="chatInput" rows="1" placeholder="Ask anything…" oninput="chatResize()"></textarea>
+      <button class="chat-send" id="chatSendBtn" onclick="sendChat()">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Floating chat button -->
+<button class="chat-fab" id="chatFab" onclick="openChat()">💬</button>
+
 <main class="main">
   <div class="top-bar">
     <span class="week-lbl" id="weekLbl"></span>
-    <button class="gen-btn" id="genBtn" onclick="generate()">
-      <span>✨</span> Generate Plan
-    </button>
+    <button class="gen-btn" id="genBtn" onclick="generate()"><span>✨</span> Generate Plan</button>
   </div>
-
   <div class="swap-hint" id="swapHint">⠿ Tap any other meal to swap — or tap outside to cancel</div>
-
   <div class="grid-scroll">
     <div class="grid" id="grid"></div>
   </div>
-
   <div id="grocerySec" style="display:none">
-    <div class="sec-title">🛒 Grocery List</div>
+    <div class="sec-title">
+      🛒 Grocery List
+      <button class="copy-btn" id="copyGroceryBtn" onclick="copyGroceryList()">📋 Copy</button>
+    </div>
     <div id="groceryBody"></div>
   </div>
 </main>
@@ -395,23 +513,50 @@
 /* ── Constants ── */
 const DAYS  = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const MEALS = ['breakfast','lunch','dinner'];
-const LABELS = { breakfast: 'Bfast', lunch: 'Lunch', dinner: 'Dinner' };
-const MEAL_ICONS = { breakfast: '🌅', lunch: '🌞', dinner: '🌙' };
+const LABELS    = { breakfast:'Bfast', lunch:'Lunch', dinner:'Dinner' };
+const MEAL_ICONS = { breakfast:'🌅', lunch:'🌞', dinner:'🌙' };
+const MEAL_FULL  = { breakfast:'🌅 Breakfast', lunch:'🌞 Lunch', dinner:'🌙 Dinner' };
 
 const CATEGORIES = [
-  { id: 'produce', label: '🥦 Produce',
-    kw: ['banana','apple','pear','mango','avocado','spinach','carrot','sweet potato','yam','pumpkin','squash','zucchini','courgette','potato','beetroot','beet','pea','tomato','cucumber','broccoli','cauliflower','corn','capsicum','pepper','berry','strawberry','blueberry','papaya','peach','plum','kiwi','melon','watermelon','lemon','lime','orange','onion','garlic','ginger','mushroom','celery','radish','eggplant','brinjal','aubergine','okra','bitter gourd','ridge gourd','bottle gourd','lauki','green bean','french bean','drumstick','moringa','coriander','cilantro','mint','basil','parsley','curry leaf','vegetable','fruit','leafy'] },
-  { id: 'dairy', label: '🥛 Dairy & Eggs',
-    kw: ['milk','yogurt','curd','cheese','paneer','ghee','butter','cream','egg','whey','cheddar','mozzarella','ricotta','buttermilk','cottage cheese'] },
-  { id: 'grains', label: '🌾 Grains & Flours',
-    kw: ['rice','oat','bread','roti','chapati','atta','flour','wheat','quinoa','semolina','suji','sooji','rava','noodle','pasta','poha','flattened rice','daliya','broken wheat','barley','millet','ragi','jowar','sorghum','bajra','maize','cornmeal','puffed rice','tortilla','pita','cracker','biscuit','cornflour','corn starch','arrowroot','tapioca'] },
-  { id: 'protein', label: '🫘 Proteins',
-    kw: ['tofu','dal','lentil','moong','masoor','urad','toor','arhar','rajma','kidney bean','black bean','navy bean','soybean','tempeh','edamame','legume','peanut','almond','cashew','walnut','sesame','sunflower seed','pumpkin seed'] },
-  { id: 'pantry', label: '🫙 Pantry', kw: [] },
+  { id:'produce', label:'🥦 Produce',
+    kw:['banana','apple','pear','mango','avocado','spinach','carrot','sweet potato','yam','pumpkin','squash','zucchini','potato','beetroot','beet','pea','tomato','cucumber','broccoli','cauliflower','corn','capsicum','pepper','berry','strawberry','blueberry','papaya','peach','plum','kiwi','melon','watermelon','lemon','lime','orange','onion','garlic','ginger','mushroom','radish','eggplant','brinjal','okra','bitter gourd','lauki','green bean','french bean','drumstick','moringa','coriander','cilantro','mint','basil','parsley','curry leaf','vegetable','fruit','leafy'] },
+  { id:'dairy',   label:'🥛 Dairy & Eggs',
+    kw:['milk','yogurt','curd','cheese','paneer','ghee','butter','cream','egg','whey','cheddar','mozzarella','ricotta','buttermilk','cottage cheese'] },
+  { id:'grains',  label:'🌾 Grains & Flours',
+    kw:['rice','oat','bread','roti','chapati','atta','flour','wheat','quinoa','semolina','suji','sooji','rava','noodle','pasta','poha','flattened rice','daliya','broken wheat','barley','millet','ragi','jowar','bajra','maize','cornmeal','puffed rice','tortilla','cracker','biscuit','cornflour','corn starch','arrowroot','tapioca'] },
+  { id:'protein', label:'🫘 Proteins',
+    kw:['tofu','dal','lentil','moong','masoor','urad','toor','arhar','rajma','kidney bean','black bean','soybean','tempeh','edamame','legume','peanut','almond','cashew','walnut','sesame','sunflower seed','pumpkin seed'] },
+  { id:'pantry',  label:'🫙 Pantry', kw:[] },
 ];
 
-/* ── System prompt ── */
-const SYSTEM = `You are a meal planner for a 10-month-old vegetarian baby.
+/* ── Helpers ── */
+function getBabyAge() { return parseInt(localStorage.getItem('babyAge') || '10', 10); }
+function mk(tag, cls) { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function chatMd(s) {
+  let t = esc(s);
+  t = t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  t = t.replace(/\*([^*\n]+?)\*/g,'<em>$1</em>');
+  t = t.replace(/\n/g,'<br>');
+  return t;
+}
+
+/* ── System prompts ── */
+function getConstraints() {
+  const age = getBabyAge();
+  return `Baby constraints for a ${age}-month-old:
+- VEGETARIAN ONLY. NO besan/chickpea flour (chickpea allergy). No chickpeas.
+- HAND-HELD FINGER FOODS ONLY — self-feedable pieces, no purées, no spoon-fed dishes.
+- TEXTURE: soft inside (gummable without teeth), holds shape. No hard/crunchy/crumbly/sticky.
+- GHEE DAILY — at least one meal per day must include ghee.
+- UNDER 30 MINUTES total prep+cook per recipe.
+- SAFETY: No honey (botulism), no whole nuts (choking), no raw hard veg, no added salt, no refined sugar. Cow milk fine in cooking. Piece size: adult thumb tip.
+- GOOD PROTEINS: tofu, paneer, eggs, cheese, yogurt (baked in), dal-based patties (no besan).`;
+}
+
+function getSystem() {
+  const age = getBabyAge();
+  return `You are a meal planner for a ${age}-month-old vegetarian baby.
 
 STRICT RULES — no exceptions:
 1. VEGETARIAN ONLY. No meat, fish, seafood, gelatin. ABSOLUTELY NO besan (chickpea flour / gram flour) — confirmed chickpea allergy. No chickpeas in any form.
@@ -419,27 +564,78 @@ STRICT RULES — no exceptions:
 3. TEXTURE: soft inside (gummable without teeth), holds shape in small hands. No hard, crunchy, crumbly, or sticky foods.
 4. GHEE DAILY — at least one meal per day must include ghee.
 5. UNDER 30 MINUTES — total prep + cook time ≤ 30 min per recipe.
-6. SAFETY: No honey (botulism), no whole nuts (choking), no raw hard vegetables, no added salt, no refined sugar. Cow milk fine in cooking. Piece size: adult thumb tip.
+6. SAFETY: No honey (botulism), no whole nuts (choking), no raw hard veg, no added salt, no refined sugar. Cow milk fine in cooking. Piece size: adult thumb tip.
 7. PROTEINS: tofu, paneer, eggs, cheese, yogurt (baked in), dal-based patties (no besan), well-mashed legumes inside baked shell.
 
 Return ONLY a raw JSON object — no markdown fences, no explanation, nothing before or after the opening brace:
 {
   "plan": {
     "Mon": {
-      "breakfast": {"name": "2–4 word name", "emoji": "🍌", "time": "15 min", "recipe": "Step-by-step plain text, each step on its own numbered line", "ingredients": ["1 ripe banana", "1 tsp ghee"]},
-      "lunch":   { same shape },
-      "dinner":  { same shape }
+      "breakfast": {"name":"2–4 word name","emoji":"🍌","time":"15 min","recipe":"Step-by-step plain text, each step on its own numbered line","ingredients":["1 ripe banana","1 tsp ghee"]},
+      "lunch":  { same shape },
+      "dinner": { same shape }
     },
-    "Tue": { ... }, "Wed": { ... }, "Thu": { ... }, "Fri": { ... }, "Sat": { ... }, "Sun": { ... }
+    "Tue":{...},"Wed":{...},"Thu":{...},"Fri":{...},"Sat":{...},"Sun":{...}
   },
   "grocery": ["consolidated deduplicated ingredient list for the full week"]
 }`;
+}
+
+function getChatSystem() {
+  const age = getBabyAge();
+  let planSummary = 'No meal plan has been generated yet.';
+  if (plan?.plan) {
+    planSummary = DAYS.map(day => {
+      const meals = MEALS.map(m => { const d = plan.plan[day]?.[m]; return d ? `${LABELS[m]}: ${d.name}` : null; }).filter(Boolean).join(', ');
+      return meals ? `${day}: ${meals}` : null;
+    }).filter(Boolean).join('\n');
+  }
+  return `You are a warm, knowledgeable baby meal assistant for a ${age}-month-old vegetarian baby.
+
+CURRENT WEEK'S MEAL PLAN:
+${planSummary}
+
+${getConstraints()}
+
+Answer questions about the plan, suggest swaps, give recipe ideas. Keep responses concise and practical. Be warm and encouraging!`;
+}
+
+function getCreativeSystem() {
+  const age = getBabyAge();
+  return `You are a creative baby finger food inventor for a ${age}-month-old vegetarian baby.
+
+${getConstraints()}
+
+Create ONE surprisingly creative, fusion or restaurant-inspired finger food that parents would feel excited about — something genuinely novel and delicious that still meets every constraint.
+
+Return ONLY this raw JSON (no markdown, no extra text):
+{"name":"Creative Name","emoji":"🎨","time":"20 min","ingredients":["item with quantity"],"recipe":"Numbered step-by-step recipe"}`;
+}
 
 /* ── State ── */
 let plan       = null;
-let mealStatus = {};   // key: "Mon.breakfast" → "made"|"skipped"
-let swapSrc    = null; // { day, meal, cell }
-let dragSrc    = null; // { day, meal }
+let mealStatus = {};
+let swapSrc    = null;
+let dragSrc    = null;
+let recipeCtx  = null;
+let chatHistory = [];
+let chatBusy    = false;
+
+/* ── API helper ── */
+async function apiCall(system, messages, stream = false, maxTokens = 4096) {
+  const key = localStorage.getItem('ak');
+  if (!key) throw new Error('NO_KEY');
+  return fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: maxTokens, system, messages, stream })
+  });
+}
 
 /* ── Init ── */
 window.addEventListener('load', () => {
@@ -458,88 +654,83 @@ window.addEventListener('load', () => {
   }
 
   if (!localStorage.getItem('ak')) openModal();
-  document.getElementById('keyInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveKey(); });
+
+  document.getElementById('keyInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveSettings(); });
+  document.getElementById('chatInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+  });
 
   setupGridEvents();
 
   document.addEventListener('click', e => {
     if (swapSrc && !e.target.closest('#grid')) clearSwapMode();
   });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (!document.getElementById('chatOverlay').classList.contains('hidden')) closeChat();
+      if (!document.getElementById('creativeBd').classList.contains('hidden')) document.getElementById('creativeBd').classList.add('hidden');
+    }
+  });
 });
 
-/* ── Week label ── */
+/* ── Week / date ── */
 function setWeekLabel() {
   const mon = monday(new Date()), sun = new Date(mon);
   sun.setDate(mon.getDate() + 6);
-  const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const fmt = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
   document.getElementById('weekLbl').textContent = `${fmt(mon)} – ${fmt(sun)}`;
 }
-
 function monday(d) {
   const m = new Date(d);
   m.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-  m.setHours(0, 0, 0, 0);
+  m.setHours(0,0,0,0);
   return m;
 }
 
-/* ── Build empty grid ── */
+/* ── Grid ── */
 function buildEmptyGrid() {
   const g = document.getElementById('grid');
   g.innerHTML = '';
-  g.appendChild(mk('div', 'g-corner'));
-
+  g.appendChild(mk('div','g-corner'));
   const today = new Date(), mon = monday(today);
-
   DAYS.forEach((day, i) => {
-    const d = new Date(mon);
-    d.setDate(mon.getDate() + i);
+    const d = new Date(mon); d.setDate(mon.getDate() + i);
     const isToday = d.toDateString() === today.toDateString();
-    const h = mk('div', `g-day${isToday ? ' today' : ''}`);
-    h.dataset.dayIdx = i;
-    h.dataset.day = day;
+    const h = mk('div', `g-day${isToday?' today':''}`);
+    h.dataset.dayIdx = i; h.dataset.day = day;
     h.innerHTML = `${day}<span class="g-date">${d.getMonth()+1}/${d.getDate()}</span>`;
     g.appendChild(h);
   });
-
   MEALS.forEach(meal => {
-    const lbl = mk('div', 'g-lbl');
-    lbl.textContent = LABELS[meal];
-    g.appendChild(lbl);
+    const lbl = mk('div','g-lbl'); lbl.textContent = LABELS[meal]; g.appendChild(lbl);
     DAYS.forEach(day => {
-      const cell = mk('div', 'g-cell');
-      cell.dataset.day = day;
-      cell.dataset.meal = meal;
+      const cell = mk('div','g-cell');
+      cell.dataset.day = day; cell.dataset.meal = meal;
       cell.innerHTML = '<span style="font-size:22px;opacity:.15">·</span>';
       g.appendChild(cell);
     });
   });
 }
 
-/* ── Render a single cell ── */
 function renderCell(cell, day, meal) {
   const m = plan?.plan?.[day]?.[meal];
   const st = mealStatus[`${day}.${meal}`] || '';
-
-  cell.dataset.day  = day;
-  cell.dataset.meal = meal;
-
+  cell.dataset.day = day; cell.dataset.meal = meal;
   if (!m) {
-    cell.className = 'g-cell';
-    cell.draggable = false;
+    cell.className = 'g-cell'; cell.draggable = false;
     cell.innerHTML = '<span style="font-size:22px;opacity:.15">·</span>';
     return;
   }
-
   cell.className = `g-cell filled${st ? ` st-${st}` : ''}`;
   cell.draggable = true;
   cell.innerHTML = `
     <button class="c-handle" title="Drag or tap to swap">⠿</button>
-    <span class="c-emoji">${esc(m.emoji || '🍽️')}</span>
-    <span class="c-name">${esc(m.name || '')}</span>
-    <span class="c-time">${esc(m.time || '')}</span>
+    <span class="c-emoji">${esc(m.emoji||'🍽️')}</span>
+    <span class="c-name">${esc(m.name||'')}</span>
+    <span class="c-time">${esc(m.time||'')}</span>
     <div class="c-status-bar">
-      <button class="c-status-btn${st === 'made'    ? ' active' : ''}" data-status="made"    title="Mark as made">✅</button>
-      <button class="c-status-btn${st === 'skipped' ? ' active' : ''}" data-status="skipped" title="Mark as skipped">⏭️</button>
+      <button class="c-status-btn${st==='made'?' active':''}" data-status="made" title="Mark as made">✅</button>
+      <button class="c-status-btn${st==='skipped'?' active':''}" data-status="skipped" title="Mark as skipped">⏭️</button>
     </div>`;
 }
 
@@ -549,7 +740,6 @@ function getCellEl(day, meal) {
   return document.querySelectorAll('.g-cell')[mi * 7 + di];
 }
 
-/* ── Fill entire grid ── */
 function fillGrid(p) {
   buildEmptyGrid();
   MEALS.forEach((meal, mi) => {
@@ -560,92 +750,55 @@ function fillGrid(p) {
   });
 }
 
-/* ── Event delegation on grid ── */
+/* ── Grid events ── */
 function setupGridEvents() {
   const grid = document.getElementById('grid');
   const clickTimers = new Map();
 
-  /* Day header click → day view */
   grid.addEventListener('click', e => {
     const dayHdr = e.target.closest('.g-day');
-    if (dayHdr) {
-      const day = dayHdr.dataset.day;
-      const idx = parseInt(dayHdr.dataset.dayIdx, 10);
-      if (plan?.plan?.[day]) openDaySheet(day, idx);
-      return;
-    }
+    if (dayHdr) { const day = dayHdr.dataset.day, idx = +dayHdr.dataset.dayIdx; if (plan?.plan?.[day]) openDaySheet(day, idx); return; }
 
     const handle = e.target.closest('.c-handle');
     const statusBtn = e.target.closest('.c-status-btn');
     const cell = e.target.closest('.g-cell.filled');
 
-    if (handle) {
-      const c = e.target.closest('.g-cell.filled');
-      if (c) handleSwapTap(c.dataset.day, c.dataset.meal, c);
-      return;
-    }
-
-    if (statusBtn) {
-      e.stopPropagation();
-      const c = statusBtn.closest('.g-cell.filled');
-      if (c) markMeal(c.dataset.day, c.dataset.meal, statusBtn.dataset.status);
-      return;
-    }
-
-    if (!cell) {
-      if (swapSrc) clearSwapMode();
-      return;
-    }
+    if (handle) { const c = handle.closest('.g-cell.filled'); if (c) handleSwapTap(c.dataset.day, c.dataset.meal, c); return; }
+    if (statusBtn) { e.stopPropagation(); const c = statusBtn.closest('.g-cell.filled'); if (c) markMeal(c.dataset.day, c.dataset.meal, statusBtn.dataset.status); return; }
+    if (!cell) { if (swapSrc) clearSwapMode(); return; }
 
     const { day, meal } = cell.dataset;
-
     if (swapSrc) {
       if (swapSrc.day === day && swapSrc.meal === meal) clearSwapMode();
       else { swapMeals(swapSrc.day, swapSrc.meal, day, meal); clearSwapMode(); }
       return;
     }
-
-    // Single-click with dblclick disambiguation
     const key = `${day}.${meal}`;
-    if (clickTimers.has(key)) {
-      clearTimeout(clickTimers.get(key));
-      clickTimers.delete(key);
-      return;
-    }
-    const t = setTimeout(() => {
-      clickTimers.delete(key);
-      const m = plan?.plan?.[day]?.[meal];
-      if (m) openRecipeSheet(m, meal, day);
-    }, 220);
+    if (clickTimers.has(key)) { clearTimeout(clickTimers.get(key)); clickTimers.delete(key); return; }
+    const t = setTimeout(() => { clickTimers.delete(key); const m = plan?.plan?.[day]?.[meal]; if (m) openRecipeSheet(m, meal, day); }, 220);
     clickTimers.set(key, t);
   });
 
-  /* Double-click → edit name */
   grid.addEventListener('dblclick', e => {
     if (e.target.closest('.c-handle') || e.target.closest('.c-status-btn')) return;
     const cell = e.target.closest('.g-cell.filled');
     if (!cell) return;
     const { day, meal } = cell.dataset;
     const key = `${day}.${meal}`;
-    if (clickTimers.has(key)) { clearTimeout(clickTimers.get(key)); clickTimers.delete(key); }
+    if (clickTimers && clickTimers.has(key)) { clearTimeout(clickTimers.get(key)); clickTimers.delete(key); }
     enterEditMode(cell, day, meal);
   });
 
-  /* Long-press (mobile) → edit name */
   let pressTimer = null, pressCell = null;
   grid.addEventListener('touchstart', e => {
     const c = e.target.closest('.g-cell.filled');
     if (!c || e.target.closest('.c-handle') || e.target.closest('.c-status-btn')) return;
     pressCell = c;
-    pressTimer = setTimeout(() => {
-      pressTimer = null;
-      enterEditMode(pressCell, pressCell.dataset.day, pressCell.dataset.meal);
-    }, 600);
+    pressTimer = setTimeout(() => { pressTimer = null; enterEditMode(pressCell, pressCell.dataset.day, pressCell.dataset.meal); }, 600);
   }, { passive: true });
   grid.addEventListener('touchend',  () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } });
   grid.addEventListener('touchmove', () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } });
 
-  /* HTML5 drag-and-drop */
   grid.addEventListener('dragstart', e => {
     const cell = e.target.closest('.g-cell.filled');
     if (!cell) return;
@@ -655,16 +808,13 @@ function setupGridEvents() {
     e.dataTransfer.setData('text/plain', `${dragSrc.day}.${dragSrc.meal}`);
   });
   grid.addEventListener('dragend', () => {
-    document.querySelectorAll('.g-cell.dragging, .g-cell.drag-over').forEach(c => {
-      c.classList.remove('dragging', 'drag-over');
-    });
+    document.querySelectorAll('.g-cell.dragging,.g-cell.drag-over').forEach(c => c.classList.remove('dragging','drag-over'));
     dragSrc = null;
   });
   grid.addEventListener('dragover', e => {
     const cell = e.target.closest('.g-cell.filled');
     if (!cell || !dragSrc) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+    e.preventDefault(); e.dataTransfer.dropEffect = 'move';
     document.querySelectorAll('.g-cell.drag-over').forEach(c => { if (c !== cell) c.classList.remove('drag-over'); });
     cell.classList.add('drag-over');
   });
@@ -683,63 +833,39 @@ function setupGridEvents() {
   });
 }
 
-/* ── Swap mode ── */
+/* ── Swap ── */
 function handleSwapTap(day, meal, cell) {
-  if (!swapSrc) {
-    swapSrc = { day, meal, cell };
-    cell.classList.add('swap-sel');
-    document.getElementById('swapHint').classList.add('visible');
-  } else if (swapSrc.day === day && swapSrc.meal === meal) {
-    clearSwapMode();
-  } else {
-    swapMeals(swapSrc.day, swapSrc.meal, day, meal);
-    clearSwapMode();
-  }
+  if (!swapSrc) { swapSrc = { day, meal, cell }; cell.classList.add('swap-sel'); document.getElementById('swapHint').classList.add('visible'); }
+  else if (swapSrc.day === day && swapSrc.meal === meal) clearSwapMode();
+  else { swapMeals(swapSrc.day, swapSrc.meal, day, meal); clearSwapMode(); }
 }
-
 function clearSwapMode() {
   if (swapSrc?.cell) swapSrc.cell.classList.remove('swap-sel');
   swapSrc = null;
   document.getElementById('swapHint').classList.remove('visible');
 }
-
 function swapMeals(d1, m1, d2, m2) {
   if (!plan?.plan?.[d1]?.[m1] || !plan?.plan?.[d2]?.[m2]) return;
-
-  const tmp = plan.plan[d1][m1];
-  plan.plan[d1][m1] = plan.plan[d2][m2];
-  plan.plan[d2][m2] = tmp;
-
-  const k1 = `${d1}.${m1}`, k2 = `${d2}.${m2}`;
-  const ts = mealStatus[k1];
+  const tmp = plan.plan[d1][m1]; plan.plan[d1][m1] = plan.plan[d2][m2]; plan.plan[d2][m2] = tmp;
+  const k1 = `${d1}.${m1}`, k2 = `${d2}.${m2}`, ts = mealStatus[k1];
   if (mealStatus[k2] !== undefined) mealStatus[k1] = mealStatus[k2]; else delete mealStatus[k1];
   if (ts !== undefined) mealStatus[k2] = ts; else delete mealStatus[k2];
-
-  localStorage.setItem('mealPlan_v2', JSON.stringify(plan));
-  saveStatus();
-
+  localStorage.setItem('mealPlan_v2', JSON.stringify(plan)); saveStatus();
   const c1 = getCellEl(d1, m1), c2 = getCellEl(d2, m2);
-  if (c1) renderCell(c1, d1, m1);
-  if (c2) renderCell(c2, d2, m2);
+  if (c1) renderCell(c1, d1, m1); if (c2) renderCell(c2, d2, m2);
 }
 
-/* ── Edit mode ── */
+/* ── Edit ── */
 function enterEditMode(cell, day, meal) {
   if (!plan?.plan?.[day]?.[meal]) return;
   const nameEl = cell.querySelector('.c-name');
   if (!nameEl) return;
-
   const oldName = plan.plan[day][meal].name || '';
   const input = document.createElement('input');
-  input.type = 'text';
-  input.value = oldName;
-  input.className = 'cell-edit-input';
-  input.maxLength = 40;
-  input.addEventListener('click',   e => e.stopPropagation());
+  input.type = 'text'; input.value = oldName; input.className = 'cell-edit-input'; input.maxLength = 40;
+  input.addEventListener('click', e => e.stopPropagation());
   input.addEventListener('dblclick', e => e.stopPropagation());
-  nameEl.replaceWith(input);
-  input.focus(); input.select();
-
+  nameEl.replaceWith(input); input.focus(); input.select();
   const save = () => {
     if (!plan?.plan?.[day]?.[meal]) return;
     plan.plan[day][meal].name = input.value.trim() || oldName;
@@ -757,27 +883,19 @@ function enterEditMode(cell, day, meal) {
 /* ── Status ── */
 function markMeal(day, meal, status) {
   const key = `${day}.${meal}`;
-  if (mealStatus[key] === status) delete mealStatus[key];
-  else mealStatus[key] = status;
+  if (mealStatus[key] === status) delete mealStatus[key]; else mealStatus[key] = status;
   saveStatus();
-  const cell = getCellEl(day, meal);
-  if (cell) renderCell(cell, day, meal);
+  const cell = getCellEl(day, meal); if (cell) renderCell(cell, day, meal);
 }
 function saveStatus() { localStorage.setItem('mealStatus_v1', JSON.stringify(mealStatus)); }
-function loadStatus() {
-  const s = localStorage.getItem('mealStatus_v1');
-  if (s) try { mealStatus = JSON.parse(s); } catch {}
-}
+function loadStatus()  { const s = localStorage.getItem('mealStatus_v1'); if (s) try { mealStatus = JSON.parse(s); } catch {} }
 
 /* ── Grocery ── */
 function categorize(ing) {
   const lower = ing.toLowerCase();
-  for (const cat of CATEGORIES) {
-    if (cat.kw.some(k => lower.includes(k))) return cat.id;
-  }
+  for (const cat of CATEGORIES) { if (cat.kw.some(k => lower.includes(k))) return cat.id; }
   return 'pantry';
 }
-
 function aggregateIngredients(p) {
   const seen = new Set(), out = [];
   DAYS.forEach(day => MEALS.forEach(meal => {
@@ -787,226 +905,328 @@ function aggregateIngredients(p) {
   }));
   return out;
 }
-
 function fillGrocery(p) {
   const items = p.grocery?.length ? p.grocery : aggregateIngredients(p);
   const body = document.getElementById('groceryBody');
   body.innerHTML = '';
-
-  const groups = {};
-  CATEGORIES.forEach(c => groups[c.id] = []);
+  const groups = {}; CATEGORIES.forEach(c => groups[c.id] = []);
   items.forEach(item => groups[categorize(item)].push(item));
-
   CATEGORIES.forEach(cat => {
     if (!groups[cat.id].length) return;
-    const sec = mk('div', 'grocery-section');
-    const hdr = mk('div', 'grocery-cat-hdr');
-    hdr.textContent = cat.label;
-    sec.appendChild(hdr);
-    const grid = mk('div', 'grocery-items');
+    const sec = mk('div','grocery-section');
+    const hdr = mk('div','grocery-cat-hdr'); hdr.textContent = cat.label; sec.appendChild(hdr);
+    const grid = mk('div','grocery-items');
     groups[cat.id].forEach(item => {
-      const label = mk('label', 'grocery-item');
-      const cb = document.createElement('input');
-      cb.type = 'checkbox';
-      cb.onchange = () => label.classList.toggle('done', cb.checked);
-      const span = document.createElement('span');
-      span.textContent = item;
-      label.appendChild(cb); label.appendChild(span);
-      grid.appendChild(label);
+      const label = mk('label','grocery-item');
+      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.onchange = () => label.classList.toggle('done', cb.checked);
+      const span = document.createElement('span'); span.textContent = item;
+      label.appendChild(cb); label.appendChild(span); grid.appendChild(label);
     });
-    sec.appendChild(grid);
-    body.appendChild(sec);
+    sec.appendChild(grid); body.appendChild(sec);
   });
-
   document.getElementById('grocerySec').style.display = items.length ? '' : 'none';
+}
+function copyGroceryList() {
+  if (!plan) return;
+  const items = plan.grocery?.length ? plan.grocery : aggregateIngredients(plan);
+  const text = items.map(i => `• ${i}`).join('\n');
+  const btn = document.getElementById('copyGroceryBtn');
+  const reset = () => { btn.textContent = '📋 Copy'; };
+  navigator.clipboard.writeText(text)
+    .then(() => { btn.textContent = '✅ Copied!'; setTimeout(reset, 2000); })
+    .catch(() => {
+      const ta = document.createElement('textarea'); ta.value = text;
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+      btn.textContent = '✅ Copied!'; setTimeout(reset, 2000);
+    });
 }
 
 /* ── Generate ── */
 async function generate() {
   const key = localStorage.getItem('ak');
   if (!key) { openModal(); return; }
-
   const btn = document.getElementById('genBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Generating…';
-
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Generating…';
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 8192,
-        system: SYSTEM,
-        messages: [{ role: 'user', content: 'Generate a complete 7-day meal plan for this week. Return only the JSON.' }]
-      })
-    });
-
-    if (!resp.ok) {
-      const e = await resp.json().catch(() => ({}));
-      throw new Error(e.error?.message || `HTTP ${resp.status}`);
-    }
-
-    const data  = await resp.json();
-    const raw   = data.content[0].text.trim();
+    const resp = await apiCall(getSystem(), [{ role:'user', content:'Generate a complete 7-day meal plan for this week. Return only the JSON.' }], false, 8192);
+    if (!resp.ok) { const e = await resp.json().catch(()=>{}); throw new Error(e?.error?.message || `HTTP ${resp.status}`); }
+    const data = await resp.json();
+    const raw = data.content[0].text.trim();
     const match = raw.match(/\{[\s\S]*\}/);
     if (!match) throw new Error('Response did not contain valid JSON');
-
     plan = JSON.parse(match[0]);
-    mealStatus = {};
-    saveStatus();
+    mealStatus = {}; saveStatus();
     localStorage.setItem('mealPlan_v2', JSON.stringify(plan));
-
-    fillGrid(plan);
-    fillGrocery(plan);
+    fillGrid(plan); fillGrocery(plan);
     btn.innerHTML = '<span>✨</span> Regenerate';
-
   } catch (err) {
-    const msg = err.message.includes('401')
-      ? 'Invalid API key — tap ⚙️ to update it.'
-      : 'Generation failed: ' + err.message;
-    alert(msg);
+    if (err.message === 'NO_KEY') { openModal(); }
+    else alert(err.message.includes('401') ? 'Invalid API key — tap ⚙️ to update it.' : 'Generation failed: ' + err.message);
     btn.innerHTML = plan ? '<span>✨</span> Regenerate' : '<span>✨</span> Generate Plan';
   }
-
   btn.disabled = false;
 }
 
-/* ── API Key ── */
+/* ── Settings ── */
 function openModal() {
   document.getElementById('keyInput').value = localStorage.getItem('ak') || '';
+  document.getElementById('ageInput').value = localStorage.getItem('babyAge') || '10';
   document.getElementById('backdrop').classList.remove('hidden');
   setTimeout(() => document.getElementById('keyInput').focus(), 60);
 }
-function saveKey() {
-  const val = document.getElementById('keyInput').value.trim();
-  if (!val.startsWith('sk-ant-')) { alert('Please enter a valid Anthropic API key (starts with sk-ant-)'); return; }
-  localStorage.setItem('ak', val);
+function saveSettings() {
+  const keyVal = document.getElementById('keyInput').value.trim();
+  if (keyVal && !keyVal.startsWith('sk-ant-')) { alert('Please enter a valid Anthropic API key (starts with sk-ant-)'); return; }
+  if (keyVal) localStorage.setItem('ak', keyVal);
+  const ageVal = document.getElementById('ageInput').value.trim();
+  if (ageVal) localStorage.setItem('babyAge', ageVal);
   document.getElementById('backdrop').classList.add('hidden');
 }
 
 /* ── Recipe sheet ── */
 function openRecipeSheet(m, meal, day) {
+  recipeCtx = { m, meal, day };
   document.getElementById('shEmoji').textContent = m.emoji || '🍽️';
   document.getElementById('shName').textContent  = m.name  || '';
-  document.getElementById('shMeta').textContent  = `${day} · ${LABELS[meal] || meal} · ${m.time || ''}`;
-
+  document.getElementById('shMeta').textContent  = `${day} · ${LABELS[meal]||meal} · ${m.time||''}`;
   const ingList = document.getElementById('shIngredients');
   ingList.innerHTML = '';
   (m.ingredients || []).forEach(ing => {
-    const div = mk('div', 'ing-item');
+    const div = mk('div','ing-item');
     div.innerHTML = `<div class="ing-dot"></div><span>${esc(ing)}</span>`;
     ingList.appendChild(div);
   });
-
   document.getElementById('shRecipe').textContent = m.recipe || '';
-
-  const bd = document.getElementById('recipeBd');
-  bd.classList.remove('hidden');
+  buildDupPicker(day, meal);
+  document.getElementById('recipeBd').classList.remove('hidden');
   document.getElementById('recipeSheet').scrollTop = 0;
+}
+
+function buildDupPicker(srcDay, srcMeal) {
+  const picker = document.getElementById('dupPicker');
+  picker.innerHTML = '';
+  MEALS.forEach(meal => {
+    const sec = mk('div','dup-section');
+    const lbl = mk('div','dup-meal-label'); lbl.textContent = MEAL_FULL[meal]; sec.appendChild(lbl);
+    const row = mk('div','dup-day-row');
+    DAYS.forEach(day => {
+      const btn = mk('button','dup-day-btn');
+      const isSrc = day === srcDay && meal === srcMeal;
+      const hasMeal = !!plan?.plan?.[day]?.[meal];
+      btn.textContent = day;
+      if (isSrc) { btn.classList.add('dup-current'); btn.disabled = true; }
+      else {
+        btn.classList.add(hasMeal ? 'dup-occupied' : 'dup-empty');
+        btn.title = hasMeal ? `Replace: ${plan.plan[day][meal].name}` : 'Empty slot';
+        btn.addEventListener('click', () => duplicateMeal(srcDay, srcMeal, day, meal));
+      }
+      row.appendChild(btn);
+    });
+    sec.appendChild(row); picker.appendChild(sec);
+  });
+}
+
+function duplicateMeal(srcDay, srcMeal, tgtDay, tgtMeal) {
+  if (!plan?.plan?.[srcDay]?.[srcMeal]) return;
+  plan.plan[tgtDay][tgtMeal] = JSON.parse(JSON.stringify(plan.plan[srcDay][srcMeal]));
+  localStorage.setItem('mealPlan_v2', JSON.stringify(plan));
+  const cell = getCellEl(tgtDay, tgtMeal); if (cell) renderCell(cell, tgtDay, tgtMeal);
+  closeSheet('recipeBd');
 }
 
 /* ── Day sheet ── */
 function openDaySheet(day, dayIdx) {
-  const mon = monday(new Date());
-  const d = new Date(mon);
+  const mon = monday(new Date()), d = new Date(mon);
   d.setDate(mon.getDate() + dayIdx);
-  const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-
   document.getElementById('dayShName').textContent = day;
-  document.getElementById('dayShMeta').textContent = dateStr;
-
-  const body = document.getElementById('dayShBody');
-  body.innerHTML = '';
-
-  const dayIngs = new Set();
-  let firstMeal = true;
-
+  document.getElementById('dayShMeta').textContent = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  const body = document.getElementById('dayShBody'); body.innerHTML = '';
+  const dayIngs = new Set(); let first = true;
   MEALS.forEach(meal => {
-    const m = plan?.plan?.[day]?.[meal];
-    if (!m) return;
-
-    if (!firstMeal) {
-      const hr = mk('hr', 'day-divider');
-      body.appendChild(hr);
-    }
-    firstMeal = false;
-
-    const sec = mk('div', 'day-meal-sec');
-
-    const hdr = mk('div', 'day-meal-hdr');
-    const iconEl = mk('div', 'day-meal-icon');
-    iconEl.textContent = MEAL_ICONS[meal];
-    const info = mk('div', '');
-    const lbl = mk('div', 'day-meal-lbl'); lbl.textContent = LABELS[meal].toUpperCase();
-    const name = mk('div', 'day-meal-name'); name.textContent = `${m.emoji || ''} ${m.name || ''}`.trim();
-    const time = mk('div', 'day-meal-time'); time.textContent = m.time || '';
-    info.appendChild(lbl); info.appendChild(name); info.appendChild(time);
-    hdr.appendChild(iconEl); hdr.appendChild(info);
-    sec.appendChild(hdr);
-
-    const ingSec = mk('div', 'r-sec'); ingSec.textContent = 'Ingredients';
-    sec.appendChild(ingSec);
-
-    const ingList = mk('div', 'ing-list');
-    (m.ingredients || []).forEach(ing => {
-      dayIngs.add(ing);
-      const div = mk('div', 'ing-item');
-      div.innerHTML = `<div class="ing-dot"></div><span>${esc(ing)}</span>`;
-      ingList.appendChild(div);
-    });
-    sec.appendChild(ingList);
-
-    const stepSec = mk('div', 'r-sec'); stepSec.textContent = 'Steps';
-    sec.appendChild(stepSec);
-    const steps = mk('div', 'recipe-text');
-    steps.textContent = m.recipe || '';
-    sec.appendChild(steps);
-
+    const m = plan?.plan?.[day]?.[meal]; if (!m) return;
+    if (!first) body.appendChild(mk('hr','day-divider'));
+    first = false;
+    const sec = mk('div','day-meal-sec');
+    const hdr = mk('div','day-meal-hdr');
+    const icon = mk('div','day-meal-icon'); icon.textContent = MEAL_ICONS[meal];
+    const info = mk('div','');
+    const lbl  = mk('div','day-meal-lbl');  lbl.textContent  = LABELS[meal].toUpperCase();
+    const name = mk('div','day-meal-name'); name.textContent = `${m.emoji||''} ${m.name||''}`.trim();
+    const time = mk('div','day-meal-time'); time.textContent = m.time || '';
+    info.append(lbl, name, time); hdr.append(icon, info); sec.appendChild(hdr);
+    const iSec = mk('div','r-sec'); iSec.textContent = 'Ingredients'; sec.appendChild(iSec);
+    const iList = mk('div','ing-list');
+    (m.ingredients || []).forEach(ing => { dayIngs.add(ing); const div = mk('div','ing-item'); div.innerHTML = `<div class="ing-dot"></div><span>${esc(ing)}</span>`; iList.appendChild(div); });
+    sec.appendChild(iList);
+    const sSec = mk('div','r-sec'); sSec.textContent = 'Steps'; sec.appendChild(sSec);
+    const steps = mk('div','recipe-text'); steps.textContent = m.recipe || ''; sec.appendChild(steps);
     body.appendChild(sec);
   });
-
-  // Day grocery list
   if (dayIngs.size) {
-    const hr = mk('hr', 'day-divider'); body.appendChild(hr);
-    const grocSec = mk('div', 'r-sec'); grocSec.textContent = "Today's Groceries";
-    body.appendChild(grocSec);
-    const grocGrid = mk('div', 'day-grocery-grid');
+    body.appendChild(mk('hr','day-divider'));
+    const gSec = mk('div','r-sec'); gSec.textContent = "Today's Groceries"; body.appendChild(gSec);
+    const gGrid = mk('div','day-grocery-grid');
     [...dayIngs].forEach(item => {
-      const label = mk('label', 'grocery-item');
-      const cb = document.createElement('input'); cb.type = 'checkbox';
-      cb.onchange = () => label.classList.toggle('done', cb.checked);
+      const label = mk('label','grocery-item');
+      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.onchange = () => label.classList.toggle('done', cb.checked);
       const span = document.createElement('span'); span.textContent = item;
-      label.appendChild(cb); label.appendChild(span);
-      grocGrid.appendChild(label);
+      label.append(cb, span); gGrid.appendChild(label);
     });
-    body.appendChild(grocGrid);
+    body.appendChild(gGrid);
   }
-
   document.getElementById('dayBd').classList.remove('hidden');
   document.getElementById('daySheet').scrollTop = 0;
 }
 
 /* ── Close sheet ── */
 function closeSheet(id, e) {
-  if (!e || e.target.id === id) {
-    document.getElementById(id).classList.add('hidden');
-  }
+  if (!e || e.target.id === id) document.getElementById(id).classList.add('hidden');
 }
 
-/* ── Helpers ── */
-function mk(tag, cls) {
-  const e = document.createElement(tag);
-  if (cls) e.className = cls;
-  return e;
+/* ── Creative recipe ── */
+async function getCreative() {
+  const key = localStorage.getItem('ak');
+  if (!key) { openModal(); return; }
+  document.getElementById('creativeBd').classList.remove('hidden');
+  const content = document.getElementById('creativeContent');
+  content.innerHTML = '<div style="padding:32px;text-align:center"><div class="spinner-dark"></div><p style="margin-top:14px;font-size:13px;color:var(--muted)">Inventing something special…</p></div>';
+  try {
+    const resp = await apiCall(getCreativeSystem(), [{ role:'user', content:'Surprise me with one creative, unique baby finger food recipe.' }], false, 1024);
+    if (!resp.ok) { const e = await resp.json().catch(()=>{}); throw new Error(e?.error?.message || `HTTP ${resp.status}`); }
+    const data = await resp.json();
+    const raw = data.content[0].text.trim();
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Bad response format');
+    renderCreativeRecipe(JSON.parse(match[0]));
+  } catch (err) {
+    content.innerHTML = `<p style="color:#dc2626;padding:12px;font-size:14px">Error: ${esc(err.message)}</p>`;
+  }
 }
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function renderCreativeRecipe(r) {
+  const content = document.getElementById('creativeContent');
+  content.innerHTML = '';
+  const hdr = mk('div','creative-hdr');
+  const emoji = mk('div','creative-emoji'); emoji.textContent = r.emoji || '🎨';
+  const info  = mk('div','');
+  const name  = mk('div','creative-name'); name.textContent = r.name || '';
+  const time  = mk('div','creative-time'); time.textContent = r.time || '';
+  info.append(name, time); hdr.append(emoji, info); content.appendChild(hdr);
+  const iSec = mk('div','r-sec'); iSec.textContent = 'Ingredients'; content.appendChild(iSec);
+  const iList = mk('div','ing-list');
+  (r.ingredients || []).forEach(ing => { const div = mk('div','ing-item'); div.innerHTML = `<div class="ing-dot"></div><span>${esc(ing)}</span>`; iList.appendChild(div); });
+  content.appendChild(iList);
+  const sSec = mk('div','r-sec'); sSec.textContent = 'Steps'; content.appendChild(sSec);
+  const steps = mk('div','recipe-text'); steps.textContent = r.recipe || ''; content.appendChild(steps);
+}
+
+/* ── Chat ── */
+function openChat() {
+  document.getElementById('chatOverlay').classList.remove('hidden');
+  document.getElementById('chatFab').style.display = 'none';
+  setTimeout(() => document.getElementById('chatInput').focus(), 300);
+}
+function closeChat() {
+  document.getElementById('chatOverlay').classList.add('hidden');
+  document.getElementById('chatFab').style.display = '';
+}
+function clearChat() {
+  chatHistory = [];
+  const msgs = document.getElementById('chatMsgs');
+  msgs.innerHTML = `
+    <div class="chat-welcome" id="chatWelcome">
+      <div class="cw-icon">👶</div>
+      <h3>Hi! I know your plan</h3>
+      <p>Ask me anything about this week's meals, recipe swaps, or new ideas.</p>
+      <div class="chat-chips">
+        <button class="chat-chip" onclick="useChip(this)">What's for dinner Sunday?</button>
+        <button class="chat-chip" onclick="useChip(this)">Suggest a high-iron swap</button>
+        <button class="chat-chip" onclick="useChip(this)">Quick snack under 10 min</button>
+        <button class="chat-chip" onclick="useChip(this)">Which meals have ghee?</button>
+      </div>
+    </div>`;
+}
+function useChip(btn) {
+  document.getElementById('chatInput').value = btn.textContent;
+  chatResize();
+  sendChat();
+}
+function chatResize() {
+  const el = document.getElementById('chatInput');
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+function scrollChat() { const m = document.getElementById('chatMsgs'); m.scrollTop = m.scrollHeight; }
+
+function appendChatMsg(role, text) {
+  const msgs = document.getElementById('chatMsgs');
+  const row = mk('div', `chat-msg ${role}`);
+  const bubble = mk('div','chat-bubble');
+  if (text) bubble.innerHTML = role === 'assistant' ? chatMd(text) : esc(text);
+  row.appendChild(bubble);
+  msgs.appendChild(row);
+  scrollChat();
+  return row;
+}
+function appendTyping() {
+  const msgs = document.getElementById('chatMsgs');
+  const row = mk('div','chat-msg assistant');
+  row.innerHTML = `<div class="chat-bubble"><div class="chat-dots"><div class="chat-dot"></div><div class="chat-dot"></div><div class="chat-dot"></div></div></div>`;
+  msgs.appendChild(row); scrollChat();
+  return row;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || chatBusy) return;
+  const key = localStorage.getItem('ak');
+  if (!key) { openModal(); return; }
+
+  document.getElementById('chatWelcome')?.remove();
+  appendChatMsg('user', text);
+  chatHistory.push({ role:'user', content:text });
+  input.value = ''; chatResize();
+  chatBusy = true;
+  document.getElementById('chatSendBtn').disabled = true;
+  const typingEl = appendTyping();
+
+  try {
+    const resp = await apiCall(getChatSystem(), chatHistory, true, 1600);
+    if (!resp.ok) { const e = await resp.json().catch(()=>{}); throw new Error(e?.error?.message || `HTTP ${resp.status}`); }
+
+    typingEl.remove();
+    const msgRow = appendChatMsg('assistant', '');
+    const bubble = msgRow.querySelector('.chat-bubble');
+
+    const reader = resp.body.getReader(), decoder = new TextDecoder();
+    let fullText = '', buf = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n'); buf = lines.pop() ?? '';
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+        if (!raw || raw === '[DONE]') continue;
+        try {
+          const ev = JSON.parse(raw);
+          if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
+            fullText += ev.delta.text;
+            bubble.innerHTML = chatMd(fullText);
+            scrollChat();
+          }
+        } catch {}
+      }
+    }
+    chatHistory.push({ role:'assistant', content:fullText });
+  } catch (err) {
+    typingEl?.remove();
+    appendChatMsg('assistant', 'Something went wrong: ' + err.message);
+  }
+
+  chatBusy = false;
+  document.getElementById('chatSendBtn').disabled = false;
 }
 </script>
 </body>
