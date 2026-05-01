@@ -59,11 +59,12 @@
 
     /* ── Grid ── */
     .grid-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -16px; padding: 0 16px 8px; }
-    .grid { display: grid; grid-template-columns: 60px repeat(7, minmax(116px, 1fr)); gap: 5px; min-width: 872px; }
+    .grid { display: grid; grid-template-columns: 72px repeat(3, 1fr); gap: 5px; }
     .g-corner { /* spacer */ }
 
     .g-day {
-      text-align: center; padding: 7px 4px; font-size: 12px; font-weight: 700; color: var(--or-dk);
+      display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+      padding: 7px 8px; font-size: 12px; font-weight: 700; color: var(--or-dk);
       border-radius: 8px; cursor: pointer; user-select: none; transition: background .15s;
     }
     .g-day:hover { background: var(--or-lt); }
@@ -72,8 +73,9 @@
     .g-date { display: block; font-size: 10.5px; font-weight: 400; color: var(--muted); margin-top: 1px; }
 
     .g-lbl {
-      display: flex; align-items: center; justify-content: flex-end; padding-right: 6px;
-      font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 6px 4px; gap: 2px;
+      font-size: 10px; font-weight: 700; color: var(--or-dk); text-transform: uppercase; letter-spacing: .5px;
     }
 
     .g-cell {
@@ -692,18 +694,20 @@ function buildEmptyGrid() {
   const g = document.getElementById('grid');
   g.innerHTML = '';
   g.appendChild(mk('div','g-corner'));
+  MEALS.forEach(meal => {
+    const h = mk('div','g-lbl');
+    h.innerHTML = `<span style="font-size:14px">${MEAL_ICONS[meal]}</span><span>${LABELS[meal]}</span>`;
+    g.appendChild(h);
+  });
   const today = new Date(), mon = monday(today);
   DAYS.forEach((day, i) => {
     const d = new Date(mon); d.setDate(mon.getDate() + i);
     const isToday = d.toDateString() === today.toDateString();
-    const h = mk('div', `g-day${isToday?' today':''}`);
-    h.dataset.dayIdx = i; h.dataset.day = day;
-    h.innerHTML = `${day}<span class="g-date">${d.getMonth()+1}/${d.getDate()}</span>`;
-    g.appendChild(h);
-  });
-  MEALS.forEach(meal => {
-    const lbl = mk('div','g-lbl'); lbl.textContent = LABELS[meal]; g.appendChild(lbl);
-    DAYS.forEach(day => {
+    const lbl = mk('div', `g-day${isToday?' today':''}`);
+    lbl.dataset.dayIdx = i; lbl.dataset.day = day;
+    lbl.innerHTML = `${day}<span class="g-date">${d.getMonth()+1}/${d.getDate()}</span>`;
+    g.appendChild(lbl);
+    MEALS.forEach(meal => {
       const cell = mk('div','g-cell');
       cell.dataset.day = day; cell.dataset.meal = meal;
       cell.innerHTML = '<span style="font-size:22px;opacity:.15">·</span>';
@@ -737,14 +741,14 @@ function renderCell(cell, day, meal) {
 function getCellEl(day, meal) {
   const di = DAYS.indexOf(day), mi = MEALS.indexOf(meal);
   if (di < 0 || mi < 0) return null;
-  return document.querySelectorAll('.g-cell')[mi * 7 + di];
+  return document.querySelectorAll('.g-cell')[di * 3 + mi];
 }
 
 function fillGrid(p) {
   buildEmptyGrid();
-  MEALS.forEach((meal, mi) => {
-    DAYS.forEach((day, di) => {
-      const cell = document.querySelectorAll('.g-cell')[mi * 7 + di];
+  DAYS.forEach((day, di) => {
+    MEALS.forEach((meal, mi) => {
+      const cell = document.querySelectorAll('.g-cell')[di * 3 + mi];
       if (cell) renderCell(cell, day, meal);
     });
   });
@@ -1175,6 +1179,44 @@ function appendTyping() {
   return row;
 }
 
+function parseSwapIntent(text) {
+  const lower = text.toLowerCase();
+  const swapWords = ['swap','change','replace','update','switch','without','instead','different','another','new meal','new recipe','regenerate','redo'];
+  if (!swapWords.some(w => lower.includes(w))) return null;
+  const DAY_MAP  = {monday:'Mon',tuesday:'Tue',wednesday:'Wed',thursday:'Thu',friday:'Fri',saturday:'Sat',sunday:'Sun',mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',sun:'Sun'};
+  const MEAL_MAP = {breakfast:'breakfast',lunch:'lunch',dinner:'dinner',bfast:'breakfast',morning:'breakfast',evening:'dinner',supper:'dinner',brunch:'lunch'};
+  let day = null, meal = null;
+  for (const [k,v] of Object.entries(DAY_MAP))  { if (new RegExp(`\\b${k}\\b`,'i').test(text)) { day  = v; break; } }
+  for (const [k,v] of Object.entries(MEAL_MAP)) { if (new RegExp(`\\b${k}\\b`,'i').test(text)) { meal = v; break; } }
+  if (!day && !meal) return null;
+  return { day, meal };
+}
+
+async function generateChatMeal(day, meal, userText, typingEl) {
+  const system = `${getConstraints()}
+Generate ONE ${meal} meal. Return ONLY raw JSON (no markdown, no extra text):
+{"name":"2-4 word name","emoji":"🍽️","time":"X min","ingredients":["item with quantity"],"recipe":"Numbered step-by-step recipe"}`;
+  const existing = plan?.plan?.[day]?.[meal];
+  const note = existing ? `Currently "${existing.name}". ` : '';
+  const resp = await apiCall(system, [{ role:'user', content:`${note}Generate a ${meal} for ${day}. User request: "${userText}"` }], false, 800);
+  if (!resp.ok) { const e = await resp.json().catch(()=>{}); throw new Error(e?.error?.message || `HTTP ${resp.status}`); }
+  const data = await resp.json();
+  const match = data.content[0].text.trim().match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('Invalid response format');
+  const newMeal = JSON.parse(match[0]);
+  if (!plan) { plan = { plan: {} }; DAYS.forEach(d => { plan.plan[d] = {}; }); }
+  if (!plan.plan[day]) plan.plan[day] = {};
+  plan.plan[day][meal] = newMeal;
+  localStorage.setItem('mealPlan_v2', JSON.stringify(plan));
+  const cell = getCellEl(day, meal);
+  if (cell) renderCell(cell, day, meal);
+  fillGrocery(plan);
+  if (typingEl) typingEl.remove();
+  const msg = `Updated **${day} ${meal}** to **${newMeal.emoji} ${newMeal.name}** (${newMeal.time}).`;
+  appendChatMsg('assistant', msg);
+  chatHistory.push({ role:'assistant', content:msg });
+}
+
 async function sendChat() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
@@ -1189,6 +1231,29 @@ async function sendChat() {
   chatBusy = true;
   document.getElementById('chatSendBtn').disabled = true;
   const typingEl = appendTyping();
+
+  const intent = parseSwapIntent(text);
+  if (intent) {
+    if (!intent.day || !intent.meal) {
+      typingEl.remove();
+      const q = !intent.day && !intent.meal ? 'Which day and meal would you like to change?'
+              : !intent.day ? `Which day's ${intent.meal} would you like to change?`
+              : `Which meal on ${intent.day} would you like to change?`;
+      appendChatMsg('assistant', q);
+      chatHistory.push({ role:'assistant', content:q });
+      chatBusy = false; document.getElementById('chatSendBtn').disabled = false;
+      return;
+    }
+    try {
+      await generateChatMeal(intent.day, intent.meal, text, typingEl);
+    } catch(err) {
+      typingEl?.remove();
+      appendChatMsg('assistant', 'Failed to generate meal: ' + esc(err.message));
+      chatHistory.push({ role:'assistant', content:'Failed to generate meal: ' + err.message });
+    }
+    chatBusy = false; document.getElementById('chatSendBtn').disabled = false;
+    return;
+  }
 
   try {
     const resp = await apiCall(getChatSystem(), chatHistory, true, 1600);
