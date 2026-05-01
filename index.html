@@ -1181,15 +1181,20 @@ function appendTyping() {
 
 function parseSwapIntent(text) {
   const lower = text.toLowerCase();
-  const swapWords = ['swap','change','replace','update','switch','without','instead','different','another','new meal','new recipe','regenerate','redo'];
-  if (!swapWords.some(w => lower.includes(w))) return null;
+  const weekTriggers = ['remove','no ','without','replace','avoid','exclude','add '];
+  const mealTriggers = ['swap','change','update','switch','instead','different','another','new meal','new recipe','regenerate','redo'];
+  const hasWeek = weekTriggers.some(w => lower.includes(w));
+  const hasMeal = mealTriggers.some(w => lower.includes(w));
+  if (!hasWeek && !hasMeal) return null;
   const DAY_MAP  = {monday:'Mon',tuesday:'Tue',wednesday:'Wed',thursday:'Thu',friday:'Fri',saturday:'Sat',sunday:'Sun',mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',sun:'Sun'};
   const MEAL_MAP = {breakfast:'breakfast',lunch:'lunch',dinner:'dinner',bfast:'breakfast',morning:'breakfast',evening:'dinner',supper:'dinner',brunch:'lunch'};
   let day = null, meal = null;
   for (const [k,v] of Object.entries(DAY_MAP))  { if (new RegExp(`\\b${k}\\b`,'i').test(text)) { day  = v; break; } }
   for (const [k,v] of Object.entries(MEAL_MAP)) { if (new RegExp(`\\b${k}\\b`,'i').test(text)) { meal = v; break; } }
-  if (!day && !meal) return null;
-  return { day, meal };
+  if (day && meal)  return { day, meal, scope: 'meal' };
+  if (day)          return { day, meal: null, scope: 'ask' };
+  if (hasWeek)      return { day: null, meal: null, scope: 'week' };
+  return null;
 }
 
 async function generateChatMeal(day, meal, userText, typingEl) {
@@ -1212,7 +1217,25 @@ Generate ONE ${meal} meal. Return ONLY raw JSON (no markdown, no extra text):
   if (cell) renderCell(cell, day, meal);
   fillGrocery(plan);
   if (typingEl) typingEl.remove();
-  const msg = `Updated **${day} ${meal}** to **${newMeal.emoji} ${newMeal.name}** (${newMeal.time}).`;
+  const msg = `✅ Grid updated! **${day} ${meal}** → **${newMeal.emoji} ${newMeal.name}** (${newMeal.time}).`;
+  appendChatMsg('assistant', msg);
+  chatHistory.push({ role:'assistant', content:msg });
+}
+
+async function generateWeekWithConstraint(userText, typingEl) {
+  const system = `${getSystem()}\n\nADDITIONAL USER CONSTRAINT: ${userText}`;
+  const resp = await apiCall(system, [{ role:'user', content:'Generate a complete 7-day meal plan applying the user constraint. Return only the JSON.' }], false, 8192);
+  if (!resp.ok) { const e = await resp.json().catch(()=>{}); throw new Error(e?.error?.message || `HTTP ${resp.status}`); }
+  const data = await resp.json();
+  const match = data.content[0].text.trim().match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('Invalid response format');
+  plan = JSON.parse(match[0]);
+  mealStatus = {}; saveStatus();
+  localStorage.setItem('mealPlan_v2', JSON.stringify(plan));
+  fillGrid(plan); fillGrocery(plan);
+  document.getElementById('genBtn').innerHTML = '<span>✨</span> Regenerate';
+  if (typingEl) typingEl.remove();
+  const msg = '✅ Grid updated!';
   appendChatMsg('assistant', msg);
   chatHistory.push({ role:'assistant', content:msg });
 }
@@ -1234,22 +1257,24 @@ async function sendChat() {
 
   const intent = parseSwapIntent(text);
   if (intent) {
-    if (!intent.day || !intent.meal) {
+    if (intent.scope === 'ask') {
       typingEl.remove();
-      const q = !intent.day && !intent.meal ? 'Which day and meal would you like to change?'
-              : !intent.day ? `Which day's ${intent.meal} would you like to change?`
-              : `Which meal on ${intent.day} would you like to change?`;
+      const q = `Which meal on ${intent.day} would you like to change?`;
       appendChatMsg('assistant', q);
       chatHistory.push({ role:'assistant', content:q });
       chatBusy = false; document.getElementById('chatSendBtn').disabled = false;
       return;
     }
+    const fn = intent.scope === 'week'
+      ? generateWeekWithConstraint(text, typingEl)
+      : generateChatMeal(intent.day, intent.meal, text, typingEl);
     try {
-      await generateChatMeal(intent.day, intent.meal, text, typingEl);
+      await fn;
     } catch(err) {
       typingEl?.remove();
-      appendChatMsg('assistant', 'Failed to generate meal: ' + esc(err.message));
-      chatHistory.push({ role:'assistant', content:'Failed to generate meal: ' + err.message });
+      const errMsg = (intent.scope === 'week' ? 'Failed to regenerate plan: ' : 'Failed to generate meal: ') + esc(err.message);
+      appendChatMsg('assistant', errMsg);
+      chatHistory.push({ role:'assistant', content:errMsg });
     }
     chatBusy = false; document.getElementById('chatSendBtn').disabled = false;
     return;
