@@ -45,6 +45,11 @@
 
     .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
     .week-lbl { font-size: 13px; color: var(--muted); font-weight: 500; }
+    .week-picker {
+      border: 1.5px solid var(--bdr); border-radius: 8px; padding: 4px 7px;
+      font-size: 12px; font-family: inherit; color: var(--txt); background: var(--card); cursor: pointer;
+    }
+    .week-picker:focus { outline: none; border-color: var(--or); }
 
     .gen-btn {
       display: flex; align-items: center; gap: 7px;
@@ -495,7 +500,10 @@
 
 <main class="main">
   <div class="top-bar">
-    <span class="week-lbl" id="weekLbl"></span>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span class="week-lbl" id="weekLbl"></span>
+      <input type="date" id="weekPicker" class="week-picker" onchange="refreshWeekDisplay()">
+    </div>
     <button class="gen-btn" id="genBtn" onclick="generate()"><span>✨</span> Generate Plan</button>
   </div>
   <div class="swap-hint" id="swapHint">⠿ Tap any other meal to swap — or tap outside to cancel</div>
@@ -641,6 +649,8 @@ async function apiCall(system, messages, stream = false, maxTokens = 4096) {
 
 /* ── Init ── */
 window.addEventListener('load', () => {
+  const initMon = monday(new Date()), pad = n => String(n).padStart(2,'0');
+  document.getElementById('weekPicker').value = `${initMon.getFullYear()}-${pad(initMon.getMonth()+1)}-${pad(initMon.getDate())}`;
   setWeekLabel();
   buildEmptyGrid();
   loadStatus();
@@ -676,17 +686,29 @@ window.addEventListener('load', () => {
 });
 
 /* ── Week / date ── */
-function setWeekLabel() {
-  const mon = monday(new Date()), sun = new Date(mon);
-  sun.setDate(mon.getDate() + 6);
-  const fmt = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-  document.getElementById('weekLbl').textContent = `${fmt(mon)} – ${fmt(sun)}`;
-}
 function monday(d) {
   const m = new Date(d);
   m.setDate(d.getDate() - ((d.getDay() + 6) % 7));
   m.setHours(0,0,0,0);
   return m;
+}
+function getWeekStart() {
+  const v = document.getElementById('weekPicker')?.value;
+  if (v) { const [y,mo,d] = v.split('-').map(Number); return monday(new Date(y, mo-1, d)); }
+  return monday(new Date());
+}
+function setWeekLabel() {
+  const mon = getWeekStart(), sun = new Date(mon);
+  sun.setDate(mon.getDate() + 6);
+  const fmt = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  document.getElementById('weekLbl').textContent = `${fmt(mon)} – ${fmt(sun)}`;
+}
+function refreshWeekDisplay() {
+  const ws = getWeekStart();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('weekPicker').value = `${ws.getFullYear()}-${pad(ws.getMonth()+1)}-${pad(ws.getDate())}`;
+  setWeekLabel();
+  if (plan) fillGrid(plan); else buildEmptyGrid();
 }
 
 /* ── Grid ── */
@@ -699,7 +721,7 @@ function buildEmptyGrid() {
     h.innerHTML = `<span style="font-size:14px">${MEAL_ICONS[meal]}</span><span>${LABELS[meal]}</span>`;
     g.appendChild(h);
   });
-  const today = new Date(), mon = monday(today);
+  const today = new Date(), mon = getWeekStart();
   DAYS.forEach((day, i) => {
     const d = new Date(mon); d.setDate(mon.getDate() + i);
     const isToday = d.toDateString() === today.toDateString();
@@ -1040,7 +1062,7 @@ function duplicateMeal(srcDay, srcMeal, tgtDay, tgtMeal) {
 
 /* ── Day sheet ── */
 function openDaySheet(day, dayIdx) {
-  const mon = monday(new Date()), d = new Date(mon);
+  const mon = getWeekStart(), d = new Date(mon);
   d.setDate(mon.getDate() + dayIdx);
   document.getElementById('dayShName').textContent = day;
   document.getElementById('dayShMeta').textContent = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
