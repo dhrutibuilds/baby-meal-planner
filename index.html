@@ -105,6 +105,17 @@
     .c-handle:hover { opacity: 1 !important; background: rgba(0,0,0,.06); }
     .c-handle:active { cursor: grabbing; }
 
+    .c-fav-btn {
+      position: absolute; top: 4px; right: 5px; width: 20px; height: 20px;
+      border: none; background: none; padding: 0; font-size: 12px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 4px; opacity: 0; transition: opacity .15s, background .15s; z-index: 2;
+      filter: grayscale(1);
+    }
+    .g-cell:hover .c-fav-btn { opacity: .65; }
+    .c-fav-btn.faved { opacity: 1; filter: none; }
+    .c-fav-btn:hover { opacity: 1 !important; background: rgba(0,0,0,.06); filter: none; }
+
     .c-emoji { font-size: 20px; line-height: 1.2; }
     .c-name  { font-size: 11px; font-weight: 600; line-height: 1.3; color: var(--txt); }
     .c-time  { font-size: 9.5px; color: var(--muted); }
@@ -159,6 +170,17 @@
     }
     .grocery-item input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--or); flex-shrink: 0; cursor: pointer; }
     .grocery-item.done span { text-decoration: line-through; color: var(--muted); }
+
+    /* ── Favourites ── */
+    .fav-item { display: flex; align-items: center; gap: 10px; background: var(--card); border-radius: 12px; padding: 10px 12px; box-shadow: 0 1px 4px rgba(0,0,0,.06); margin-bottom: 8px; }
+    .fav-emoji { font-size: 22px; flex-shrink: 0; }
+    .fav-info  { flex: 1; min-width: 0; }
+    .fav-name  { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fav-time  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .fav-add-btn { padding: 6px 11px; background: var(--or-lt); color: var(--or-dk); border: 1.5px solid var(--bdr); border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; flex-shrink: 0; transition: background .15s; }
+    .fav-add-btn:hover { background: var(--bdr); }
+    .fav-del-btn { width: 24px; height: 24px; border: none; background: none; color: var(--muted); font-size: 15px; cursor: pointer; border-radius: 4px; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; }
+    .fav-del-btn:hover { background: #f5f5f5; color: #dc2626; }
 
     /* ── Settings modal ── */
     .backdrop {
@@ -495,6 +517,15 @@
   </div>
 </div>
 
+<!-- Add to plan picker -->
+<div class="backdrop hidden" id="addToPlanBd">
+  <div class="modal">
+    <h2 style="margin-bottom:8px">📅 Add to Plan</h2>
+    <div id="addToPlanContent" style="max-height:58vh;overflow-y:auto"></div>
+    <button class="modal-btn" style="margin-top:12px;background:#f0ece5;color:var(--txt);box-shadow:none" onclick="document.getElementById('addToPlanBd').classList.add('hidden')">Cancel</button>
+  </div>
+</div>
+
 <!-- Floating chat button -->
 <button class="chat-fab" id="chatFab" onclick="openChat()">💬</button>
 
@@ -516,6 +547,10 @@
       <button class="copy-btn" id="copyGroceryBtn" onclick="copyGroceryList()">📋 Copy</button>
     </div>
     <div id="groceryBody"></div>
+  </div>
+  <div id="favSec" style="display:none">
+    <div class="sec-title">❤️ Favourites</div>
+    <div id="favBody"></div>
   </div>
 </main>
 
@@ -591,6 +626,18 @@ Return ONLY a raw JSON object — no markdown fences, no explanation, nothing be
 }`;
 }
 
+function getSlimSystem() {
+  const age = getBabyAge();
+  return `You are a meal planner for a ${age}-month-old vegetarian baby.
+STRICT RULES: vegetarian only, no besan/chickpeas, finger foods only, ghee daily, under 30 min, no honey/whole nuts/added salt/refined sugar.
+Return ONLY a raw JSON object — no markdown, no explanation:
+{"plan":{"Mon":{"breakfast":{"name":"2-4 word name","emoji":"🍌","time":"15 min"},"lunch":{"name":"...","emoji":"...","time":"..."},"dinner":{"name":"...","emoji":"...","time":"..."}},"Tue":{…},"Wed":{…},"Thu":{…},"Fri":{…},"Sat":{…},"Sun":{…}}}`;
+}
+function getRecipeSystem() {
+  return `${getConstraints()}
+For the given meal, return ONLY raw JSON (no markdown, no extra text):
+{"ingredients":["item with quantity"],"recipe":"Numbered step-by-step recipe"}`;
+}
 function getChatSystem() {
   const age = getBabyAge();
   let planSummary = 'No meal plan has been generated yet.';
@@ -630,6 +677,7 @@ let dragSrc    = null;
 let recipeCtx  = null;
 let chatHistory = [];
 let chatBusy    = false;
+let favourites  = [];
 
 /* ── API helper ── */
 async function apiCall(system, messages, stream = false, maxTokens = 4096) {
@@ -643,7 +691,7 @@ async function apiCall(system, messages, stream = false, maxTokens = 4096) {
       'anthropic-version': '2023-06-01',
       'anthropic-dangerous-direct-browser-access': 'true'
     },
-    body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: maxTokens, system, messages, stream })
+    body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: maxTokens, system, messages, stream })
   });
 }
 
@@ -654,6 +702,7 @@ window.addEventListener('load', () => {
   setWeekLabel();
   buildEmptyGrid();
   loadStatus();
+  loadFavourites(); renderFavourites();
 
   const saved = localStorage.getItem('mealPlan_v2');
   if (saved) {
@@ -751,6 +800,7 @@ function renderCell(cell, day, meal) {
   cell.draggable = true;
   cell.innerHTML = `
     <button class="c-handle" title="Drag or tap to swap">⠿</button>
+    <button class="c-fav-btn${isFavourited(m.name)?' faved':''}" title="Favourite">❤️</button>
     <span class="c-emoji">${esc(m.emoji||'🍽️')}</span>
     <span class="c-name">${esc(m.name||'')}</span>
     <span class="c-time">${esc(m.time||'')}</span>
@@ -787,10 +837,12 @@ function setupGridEvents() {
 
     const handle = e.target.closest('.c-handle');
     const statusBtn = e.target.closest('.c-status-btn');
+    const favBtn = e.target.closest('.c-fav-btn');
     const cell = e.target.closest('.g-cell.filled');
 
     if (handle) { const c = handle.closest('.g-cell.filled'); if (c) handleSwapTap(c.dataset.day, c.dataset.meal, c); return; }
     if (statusBtn) { e.stopPropagation(); const c = statusBtn.closest('.g-cell.filled'); if (c) markMeal(c.dataset.day, c.dataset.meal, statusBtn.dataset.status); return; }
+    if (favBtn) { e.stopPropagation(); const c = favBtn.closest('.g-cell.filled'); if (c) toggleFavourite(c.dataset.day, c.dataset.meal); return; }
     if (!cell) { if (swapSrc) clearSwapMode(); return; }
 
     const { day, meal } = cell.dataset;
@@ -916,6 +968,72 @@ function markMeal(day, meal, status) {
 function saveStatus() { localStorage.setItem('mealStatus_v1', JSON.stringify(mealStatus)); }
 function loadStatus()  { const s = localStorage.getItem('mealStatus_v1'); if (s) try { mealStatus = JSON.parse(s); } catch {} }
 
+/* ── Favourites ── */
+function loadFavourites() { const s = localStorage.getItem('favourites_v1'); if (s) try { favourites = JSON.parse(s); } catch {} }
+function saveFavourites() { localStorage.setItem('favourites_v1', JSON.stringify(favourites)); }
+function isFavourited(name) { return favourites.some(f => f.name === name); }
+function toggleFavourite(day, meal) {
+  const m = plan?.plan?.[day]?.[meal]; if (!m) return;
+  const idx = favourites.findIndex(f => f.name === m.name);
+  if (idx >= 0) favourites.splice(idx, 1); else favourites.push({...m});
+  saveFavourites();
+  const cell = getCellEl(day, meal); if (cell) renderCell(cell, day, meal);
+  renderFavourites();
+}
+function renderFavourites() {
+  const sec = document.getElementById('favSec'); if (!sec) return;
+  sec.style.display = favourites.length ? '' : 'none';
+  const body = document.getElementById('favBody'); body.innerHTML = '';
+  favourites.forEach((fav, idx) => {
+    const item = mk('div','fav-item');
+    const emoji = mk('div','fav-emoji'); emoji.textContent = fav.emoji || '🍽️';
+    const info = mk('div','fav-info');
+    const name = mk('div','fav-name'); name.textContent = fav.name || '';
+    const time = mk('div','fav-time'); time.textContent = fav.time || '';
+    info.append(name, time);
+    const addBtn = mk('button','fav-add-btn'); addBtn.textContent = '+ Add to plan';
+    addBtn.onclick = () => openAddToPlan(idx);
+    const delBtn = mk('button','fav-del-btn'); delBtn.textContent = '✕'; delBtn.title = 'Remove';
+    delBtn.onclick = () => { favourites.splice(idx, 1); saveFavourites(); renderFavourites(); renderAllFavBtns(); };
+    item.append(emoji, info, addBtn, delBtn);
+    body.appendChild(item);
+  });
+}
+function renderAllFavBtns() {
+  document.querySelectorAll('.c-fav-btn').forEach(btn => {
+    const cell = btn.closest('.g-cell.filled'); if (!cell) return;
+    const m = plan?.plan?.[cell.dataset.day]?.[cell.dataset.meal];
+    if (m) btn.classList.toggle('faved', isFavourited(m.name));
+  });
+}
+function openAddToPlan(favIdx) {
+  const fav = favourites[favIdx]; if (!fav) return;
+  const content = document.getElementById('addToPlanContent');
+  content.innerHTML = `<p style="font-size:13px;margin-bottom:12px;color:var(--muted)">Place <strong>${esc(fav.emoji||'')} ${esc(fav.name)}</strong> in:</p>`;
+  MEALS.forEach(meal => {
+    const sec = mk('div','dup-section');
+    const lbl = mk('div','dup-meal-label'); lbl.textContent = MEAL_FULL[meal]; sec.appendChild(lbl);
+    const row = mk('div','dup-day-row');
+    DAYS.forEach(day => {
+      const btn = mk('button','dup-day-btn');
+      const has = !!plan?.plan?.[day]?.[meal];
+      btn.textContent = day; btn.classList.add(has ? 'dup-occupied' : 'dup-empty');
+      btn.title = has ? `Replace: ${plan.plan[day][meal].name}` : 'Empty slot';
+      btn.onclick = () => {
+        if (!plan) { plan = { plan:{} }; DAYS.forEach(d => { plan.plan[d] = {}; }); }
+        if (!plan.plan[day]) plan.plan[day] = {};
+        plan.plan[day][meal] = {...fav};
+        localStorage.setItem('mealPlan_v2', JSON.stringify(plan));
+        fillGrid(plan);
+        document.getElementById('addToPlanBd').classList.add('hidden');
+      };
+      row.appendChild(btn);
+    });
+    sec.appendChild(row); content.appendChild(sec);
+  });
+  document.getElementById('addToPlanBd').classList.remove('hidden');
+}
+
 /* ── Grocery ── */
 function categorize(ing) {
   const lower = ing.toLowerCase();
@@ -974,7 +1092,7 @@ async function generate() {
   const btn = document.getElementById('genBtn');
   btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Generating…';
   try {
-    const resp = await apiCall(getSystem(), [{ role:'user', content:'Generate a complete 7-day meal plan for this week. Return only the JSON.' }], false, 8192);
+    const resp = await apiCall(getSlimSystem(), [{ role:'user', content:'Generate a complete 7-day meal plan. Return only the JSON.' }], false, 2048);
     if (!resp.ok) { const e = await resp.json().catch(()=>{}); throw new Error(e?.error?.message || `HTTP ${resp.status}`); }
     const data = await resp.json();
     const raw = data.content[0].text.trim();
@@ -1009,6 +1127,20 @@ function saveSettings() {
   document.getElementById('backdrop').classList.add('hidden');
 }
 
+async function loadMealDetails(day, meal) {
+  const m = plan?.plan?.[day]?.[meal];
+  if (!m || (m.recipe && m.ingredients?.length)) return;
+  const resp = await apiCall(getRecipeSystem(), [{ role:'user', content:`Meal: "${m.name}" (${meal} for baby). Generate ingredients and recipe.` }], false, 700);
+  if (!resp.ok) { const e = await resp.json().catch(()=>{}); throw new Error(e?.error?.message || `HTTP ${resp.status}`); }
+  const data = await resp.json();
+  const match = data.content[0].text.trim().match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('Invalid response');
+  const det = JSON.parse(match[0]);
+  plan.plan[day][meal].ingredients = det.ingredients || [];
+  plan.plan[day][meal].recipe = det.recipe || '';
+  localStorage.setItem('mealPlan_v2', JSON.stringify(plan));
+}
+
 /* ── Recipe sheet ── */
 function openRecipeSheet(m, meal, day) {
   recipeCtx = { m, meal, day };
@@ -1016,13 +1148,22 @@ function openRecipeSheet(m, meal, day) {
   document.getElementById('shName').textContent  = m.name  || '';
   document.getElementById('shMeta').textContent  = `${day} · ${LABELS[meal]||meal} · ${m.time||''}`;
   const ingList = document.getElementById('shIngredients');
-  ingList.innerHTML = '';
-  (m.ingredients || []).forEach(ing => {
-    const div = mk('div','ing-item');
-    div.innerHTML = `<div class="ing-dot"></div><span>${esc(ing)}</span>`;
-    ingList.appendChild(div);
-  });
-  document.getElementById('shRecipe').textContent = m.recipe || '';
+  const recipeEl = document.getElementById('shRecipe');
+  if (m.ingredients?.length || m.recipe) {
+    ingList.innerHTML = '';
+    (m.ingredients || []).forEach(ing => { const div = mk('div','ing-item'); div.innerHTML = `<div class="ing-dot"></div><span>${esc(ing)}</span>`; ingList.appendChild(div); });
+    recipeEl.textContent = m.recipe || '';
+  } else {
+    ingList.innerHTML = '<div style="padding:16px;text-align:center"><div class="spinner-dark"></div></div>';
+    recipeEl.textContent = '';
+    loadMealDetails(day, meal).then(() => {
+      const u = plan?.plan?.[day]?.[meal]; if (!u) return;
+      ingList.innerHTML = '';
+      (u.ingredients || []).forEach(ing => { const div = mk('div','ing-item'); div.innerHTML = `<div class="ing-dot"></div><span>${esc(ing)}</span>`; ingList.appendChild(div); });
+      recipeEl.textContent = u.recipe || '';
+      fillGrocery(plan);
+    }).catch(err => { ingList.innerHTML = `<p style="color:#dc2626;font-size:13px;padding:8px">${esc(err.message)}</p>`; });
+  }
   buildDupPicker(day, meal);
   document.getElementById('recipeBd').classList.remove('hidden');
   document.getElementById('recipeSheet').scrollTop = 0;
@@ -1235,9 +1376,7 @@ Generate ONE ${meal} meal. Return ONLY raw JSON (no markdown, no extra text):
   if (!plan.plan[day]) plan.plan[day] = {};
   plan.plan[day][meal] = newMeal;
   localStorage.setItem('mealPlan_v2', JSON.stringify(plan));
-  const cell = getCellEl(day, meal);
-  if (cell) renderCell(cell, day, meal);
-  fillGrocery(plan);
+  fillGrid(plan); fillGrocery(plan);
   if (typingEl) typingEl.remove();
   const msg = `✅ Grid updated! **${day} ${meal}** → **${newMeal.emoji} ${newMeal.name}** (${newMeal.time}).`;
   appendChatMsg('assistant', msg);
