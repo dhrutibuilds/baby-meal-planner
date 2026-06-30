@@ -1,0 +1,17 @@
+name: Friday Email
+on:
+  schedule:
+    - cron: '0 8 * * 5'
+  workflow_dispatch:
+jobs:
+  email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send via Resend
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          curl -s -X POST https://api.resend.com/emails \
+            -H "Authorization: Bearer ${RESEND_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{"from":"Baby Meal Planner <onboarding@resend.dev>","to":["dhru2292@gmail.com"],"subject":"Plan this weeks baby meals!","html":"<h2>Hi! Time to plan your babys meals for the week.</h2><p><a href=\"https://dhrutibuilds.github.io/baby-meal-planner/\">Open Baby Meal Planner</a></p>"}'
