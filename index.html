@@ -421,24 +421,7 @@
     <p>Vegetarian · Finger foods · Under 30 min · Ghee daily</p>
   </div>
   <button class="icon-btn" onclick="getCreative()" title="Creative recipe">🎲</button>
-  <button class="icon-btn" onclick="openModal()" title="Settings">⚙️</button>
 </header>
-
-<!-- Settings modal -->
-<div class="backdrop hidden" id="backdrop">
-  <div class="modal">
-    <h2>⚙️ Settings</h2>
-    <p class="modal-desc">Your API key is saved only in this browser's local storage — sent directly to Anthropic, never through any third-party server.</p>
-    <input type="password" id="keyInput" placeholder="sk-ant-api03-…" autocomplete="off" />
-    <div class="setting-row">
-      <label class="setting-label" for="ageInput">👶 Baby's age</label>
-      <input type="number" id="ageInput" class="age-input" min="4" max="36" placeholder="10" />
-      <span class="setting-unit">months</span>
-    </div>
-    <button class="modal-btn" onclick="saveSettings()">Save Settings</button>
-    <p class="modal-hint">Get an API key at <strong>console.anthropic.com</strong></p>
-  </div>
-</div>
 
 <!-- Creative recipe popup -->
 <div class="creative-bd hidden" id="creativeBd" onclick="if(event.target===this)this.classList.add('hidden')">
@@ -690,17 +673,10 @@ let favourites  = [];
 
 /* ── API helper ── */
 async function apiCall(system, messages, stream = false, maxTokens = 4096) {
-  const key = localStorage.getItem('ak');
-  if (!key) throw new Error('NO_KEY');
-  return fetch('https://api.anthropic.com/v1/messages', {
+  return fetch('/api/chat', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: maxTokens, system, messages, stream })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ system, messages, stream, max_tokens: maxTokens })
   });
 }
 
@@ -723,9 +699,6 @@ window.addEventListener('load', () => {
     } catch { localStorage.removeItem('mealPlan_v2'); }
   }
 
-  if (!localStorage.getItem('ak')) openModal();
-
-  document.getElementById('keyInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveSettings(); });
   document.getElementById('chatInput').addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
   });
@@ -1096,8 +1069,6 @@ function copyGroceryList() {
 
 /* ── Generate ── */
 async function generate() {
-  const key = localStorage.getItem('ak');
-  if (!key) { openModal(); return; }
   const btn = document.getElementById('genBtn');
   btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Generating…';
   try {
@@ -1113,28 +1084,12 @@ async function generate() {
     fillGrid(plan); fillGrocery(plan);
     btn.innerHTML = '<span>✨</span> Regenerate';
   } catch (err) {
-    if (err.message === 'NO_KEY') { openModal(); }
-    else alert(err.message.includes('401') ? 'Invalid API key — tap ⚙️ to update it.' : 'Generation failed: ' + err.message);
+    alert('Generation failed: ' + err.message);
     btn.innerHTML = plan ? '<span>✨</span> Regenerate' : '<span>✨</span> Generate Plan';
   }
   btn.disabled = false;
 }
 
-/* ── Settings ── */
-function openModal() {
-  document.getElementById('keyInput').value = localStorage.getItem('ak') || '';
-  document.getElementById('ageInput').value = localStorage.getItem('babyAge') || '10';
-  document.getElementById('backdrop').classList.remove('hidden');
-  setTimeout(() => document.getElementById('keyInput').focus(), 60);
-}
-function saveSettings() {
-  const keyVal = document.getElementById('keyInput').value.trim();
-  if (keyVal && !keyVal.startsWith('sk-ant-')) { alert('Please enter a valid Anthropic API key (starts with sk-ant-)'); return; }
-  if (keyVal) localStorage.setItem('ak', keyVal);
-  const ageVal = document.getElementById('ageInput').value.trim();
-  if (ageVal) localStorage.setItem('babyAge', ageVal);
-  document.getElementById('backdrop').classList.add('hidden');
-}
 
 async function loadMealDetails(day, meal) {
   const m = plan?.plan?.[day]?.[meal];
@@ -1261,8 +1216,6 @@ function closeSheet(id, e) {
 
 /* ── Creative recipe ── */
 async function getCreative() {
-  const key = localStorage.getItem('ak');
-  if (!key) { openModal(); return; }
   document.getElementById('creativeBd').classList.remove('hidden');
   const content = document.getElementById('creativeContent');
   content.innerHTML = '<div style="padding:32px;text-align:center"><div class="spinner-dark"></div><p style="margin-top:14px;font-size:13px;color:var(--muted)">Inventing something special…</p></div>';
@@ -1414,9 +1367,6 @@ async function sendChat() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if (!text || chatBusy) return;
-  const key = localStorage.getItem('ak');
-  if (!key) { openModal(); return; }
-
   document.getElementById('chatWelcome')?.remove();
   appendChatMsg('user', text);
   chatHistory.push({ role:'user', content:text });
