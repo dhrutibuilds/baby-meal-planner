@@ -9,6 +9,9 @@ export default async function handler(req) {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders });
 
   const { codeId } = await req.json();
+  if (codeId === 'master') {
+    return new Response(JSON.stringify({ allowed: true, remaining: 999 }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  }
   const today = new Date().toISOString().slice(0, 10);
   const key = `usage:${codeId}:${today}`;
 

@@ -73,7 +73,7 @@
 
     /* ── Grid ── */
     .grid-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -16px; padding: 0 16px 8px; }
-    .grid { display: grid; grid-template-columns: 72px repeat(3, 1fr); gap: 5px; }
+    .grid { display: grid; grid-template-columns: 72px repeat(3, 1fr); gap: 5px; min-width: 340px; }
     .g-corner { /* spacer */ }
 
     .g-day {
@@ -412,6 +412,9 @@
     .chat-send svg { width: 17px; height: 17px; fill: #fff; }
 
     /* ── Onboarding ── */
+    @keyframes obShake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+    .ob-shake { animation: obShake .35s ease; }
+    .ob-err { font-size:12px; color:#dc2626; margin-top:6px; min-height:16px; }
     .ob-step { display:none }
     .ob-step.active { display:block }
     .ob-progress { display:flex; gap:4px; margin-bottom:20px }
@@ -435,9 +438,9 @@
 
     /* ── Tour ── */
     .tour-overlay { position:fixed; inset:0; z-index:500; pointer-events:none; }
-    .tour-highlight { position:absolute; border:3px solid var(--or); border-radius:12px; pointer-events:none; box-shadow:0 0 0 9999px rgba(0,0,0,.45); transition:all .3s; z-index:501; }
+    .tour-highlight { position:fixed; border:3px solid var(--or); border-radius:12px; pointer-events:none; transition:all .3s; z-index:501; box-shadow:0 0 0 2px rgba(249,115,22,.4); }
     .tour-tooltip {
-      position:absolute; background:#fff; border-radius:16px; padding:16px 18px;
+      position:fixed; background:#fff; border-radius:16px; padding:16px 18px;
       max-width:260px; box-shadow:0 8px 32px rgba(0,0,0,.22);
       z-index:502; pointer-events:all;
     }
@@ -557,6 +560,7 @@
       </button>
     </div>
 
+    <p class="ob-err" id="obErr"></p>
     <div class="ob-nav">
       <button class="ob-back" id="obBackBtn" onclick="obBack()" style="visibility:hidden">← Back</button>
       <button class="ob-next" id="obNextBtn" onclick="obNext()">Next →</button>
@@ -1698,7 +1702,31 @@ function selectOption(btn, groupId) {
   btn.classList.add('sel');
 }
 
+function obShake(msg) {
+  document.getElementById('obErr').textContent = msg || 'Please make a selection to continue.';
+  const modal = document.getElementById('obModal');
+  modal.classList.remove('ob-shake');
+  void modal.offsetWidth;
+  modal.classList.add('ob-shake');
+  setTimeout(() => modal.classList.remove('ob-shake'), 400);
+}
+
 function obNext() {
+  document.getElementById('obErr').textContent = '';
+  if (obCurrentStep === 1) {
+    const name = document.getElementById('obName').value.trim();
+    const age  = document.getElementById('obAge').value.trim();
+    if (!name) { obShake("Enter your baby's name."); return; }
+    if (!age)  { obShake("Enter your baby's age in months."); return; }
+  } else if (obCurrentStep === 2 || obCurrentStep === 3) {
+    if (!document.querySelector('#obStep' + obCurrentStep + ' .chip.sel')) {
+      obShake('Pick at least one option to continue.'); return;
+    }
+  } else if (obCurrentStep >= 4) {
+    if (!document.querySelector('#obStep' + obCurrentStep + ' .ob-option.sel')) {
+      obShake('Pick an option to continue.'); return;
+    }
+  }
   if (obCurrentStep === OB_TOTAL) { completeOnboarding(); return; }
   const curr = document.getElementById('obStep' + obCurrentStep);
   if (curr) curr.classList.remove('active');
@@ -1768,16 +1796,17 @@ function showTourStep(i) {
   if (!target) { tourStep++; showTourStep(tourStep); return; }
   const rect = target.getBoundingClientRect();
   const pad = 6;
-  highlight.style.top    = (rect.top - pad + window.scrollY) + 'px';
+  highlight.style.top    = (rect.top - pad) + 'px';
   highlight.style.left   = (rect.left - pad) + 'px';
   highlight.style.width  = (rect.width + pad * 2) + 'px';
   highlight.style.height = (rect.height + pad * 2) + 'px';
   const isLast = i === TOUR_STEPS.length - 1;
   tooltip.innerHTML = `<div class="tour-tt-title">${step.title}</div><div class="tour-tt-desc">${step.desc}</div><button class="tour-btn" onclick="tourNext()">${isLast ? 'Done' : 'Next'}</button>`;
-  const ttW = 260, ttH = 110;
-  let ttTop = rect.bottom + pad + 10 + window.scrollY;
+  const ttW = 260, ttH = 120;
+  let ttTop = rect.bottom + pad + 10;
   let ttLeft = rect.left;
-  if (ttTop + ttH > window.innerHeight + window.scrollY) ttTop = rect.top - ttH - pad - 10 + window.scrollY;
+  if (ttTop + ttH > window.innerHeight) ttTop = rect.top - ttH - pad - 10;
+  if (ttTop < 8) ttTop = 8;
   if (ttLeft + ttW > window.innerWidth) ttLeft = window.innerWidth - ttW - 12;
   if (ttLeft < 8) ttLeft = 8;
   tooltip.style.top  = ttTop + 'px';
