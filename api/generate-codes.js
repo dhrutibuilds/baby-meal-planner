@@ -16,8 +16,8 @@ export default async function handler(req) {
   const codes = Array.from({ length: 15 }, randomCode);
 
   await Promise.all(codes.map(code =>
-    fetch(`${process.env.STORAGE_URL}/set/code:${code}/active`, {
-      headers: { Authorization: `Bearer ${process.env.STORAGE_TOKEN}` }
+    fetch(`${process.env.KV_REST_API_URL}/set/code:${code}/active`, {
+      headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` }
     })
   ));
 

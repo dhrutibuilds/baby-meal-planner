@@ -11,8 +11,8 @@ export default async function handler(req) {
   const { code } = await req.json();
   const key = `code:${code.toUpperCase()}`;
 
-  const getRes = await fetch(`${process.env.STORAGE_URL}/get/${key}`, {
-    headers: { Authorization: `Bearer ${process.env.STORAGE_TOKEN}` }
+  const getRes = await fetch(`${process.env.KV_REST_API_URL}/get/${key}`, {
+    headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` }
   });
   const getData = await getRes.json();
 
@@ -23,8 +23,8 @@ export default async function handler(req) {
     return new Response(JSON.stringify({ valid: false, message: 'Code already used.' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 
-  await fetch(`${process.env.STORAGE_URL}/set/${key}/used`, {
-    headers: { Authorization: `Bearer ${process.env.STORAGE_TOKEN}` }
+  await fetch(`${process.env.KV_REST_API_URL}/set/${key}/used`, {
+    headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` }
   });
 
   const codeId = code.toUpperCase();

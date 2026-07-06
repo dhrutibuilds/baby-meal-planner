@@ -12,8 +12,8 @@ export default async function handler(req) {
   const today = new Date().toISOString().slice(0, 10);
   const key = `usage:${codeId}:${today}`;
 
-  const res = await fetch(`${process.env.STORAGE_URL}/get/${key}`, {
-    headers: { Authorization: `Bearer ${process.env.STORAGE_TOKEN}` }
+  const res = await fetch(`${process.env.KV_REST_API_URL}/get/${key}`, {
+    headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` }
   });
   const data = await res.json();
   const count = parseInt(data.result || '0', 10);
