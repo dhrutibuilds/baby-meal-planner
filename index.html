@@ -410,6 +410,40 @@
     .chat-send:hover    { background: var(--or-dk); }
     .chat-send:disabled { background: #e2d9ce; box-shadow: none; cursor: default; transform: none; }
     .chat-send svg { width: 17px; height: 17px; fill: #fff; }
+
+    /* ── Onboarding ── */
+    .ob-step { display:none }
+    .ob-step.active { display:block }
+    .ob-progress { display:flex; gap:4px; margin-bottom:20px }
+    .ob-dot { flex:1; height:4px; border-radius:2px; background:#fed7aa }
+    .ob-dot.done { background:var(--or) }
+    .chip-grid { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 }
+    .chip { padding:8px 14px; border:2px solid var(--bdr); border-radius:100px; font-size:13px; cursor:pointer; background:var(--card); font-family:inherit; transition:all .15s }
+    .chip.sel { background:var(--or); border-color:var(--or); color:#fff }
+    .ob-option { display:block; width:100%; text-align:left; padding:12px 14px; border:2px solid var(--bdr); border-radius:12px; margin-bottom:8px; background:var(--card); cursor:pointer; font-family:inherit; transition:all .15s }
+    .ob-option:hover { border-color:var(--or) }
+    .ob-option.sel { border-color:var(--or); background:var(--or-lt) }
+    .ob-opt-title { font-size:14px; font-weight:600 }
+    .ob-opt-desc { font-size:12px; color:var(--muted); margin-top:2px }
+    .ob-input { display:block; width:100%; padding:12px 14px; border:2px solid #e5e7eb; border-radius:12px; font-size:14px; font-family:inherit; margin-bottom:12px; transition:border-color .2s }
+    .ob-input:focus { outline:none; border-color:var(--or) }
+    .ob-helper { font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.5 }
+    .ob-nav { display:flex; align-items:center; justify-content:space-between; margin-top:18px }
+    .ob-back { background:none; border:none; font-size:13px; color:var(--muted); cursor:pointer; padding:4px 0 }
+    .ob-next { padding:13px 28px; background:var(--or); color:#fff; border:none; border-radius:12px; font-size:15px; font-weight:600; font-family:inherit; cursor:pointer; transition:background .15s }
+    .ob-next:hover { background:var(--or-dk) }
+
+    /* ── Tour ── */
+    .tour-overlay { position:fixed; inset:0; z-index:500; pointer-events:none; }
+    .tour-highlight { position:absolute; border:3px solid var(--or); border-radius:12px; pointer-events:none; box-shadow:0 0 0 9999px rgba(0,0,0,.45); transition:all .3s; z-index:501; }
+    .tour-tooltip {
+      position:absolute; background:#fff; border-radius:16px; padding:16px 18px;
+      max-width:260px; box-shadow:0 8px 32px rgba(0,0,0,.22);
+      z-index:502; pointer-events:all;
+    }
+    .tour-tt-title { font-size:15px; font-weight:700; margin-bottom:4px; }
+    .tour-tt-desc  { font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:12px; }
+    .tour-btn { padding:9px 20px; background:var(--or); color:#fff; border:none; border-radius:10px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; }
   </style>
 </head>
 <body>
@@ -421,7 +455,128 @@
     <p>Vegetarian · Finger foods · Under 30 min · Ghee daily</p>
   </div>
   <button class="icon-btn" onclick="getCreative()" title="Creative recipe">🎲</button>
+  <button class="icon-btn" onclick="openFeedback()" title="Send feedback">📝</button>
+  <button class="icon-btn" onclick="openOnboarding()" title="Settings">⚙️</button>
 </header>
+
+<!-- Invite code screen -->
+<div class="backdrop hidden" id="inviteBd">
+  <div class="modal" style="text-align:center">
+    <div style="font-size:40px;margin-bottom:12px">🥕</div>
+    <h2 style="margin-bottom:8px">Baby Meal Planner</h2>
+    <p class="modal-desc">This is an invite-only beta. Enter your code to get started.</p>
+    <input type="text" id="inviteInput" class="ob-input" placeholder="Enter invite code" autocomplete="off" style="text-align:center;letter-spacing:2px;text-transform:uppercase" />
+    <button class="modal-btn" id="inviteBtn" onclick="redeemCode()">Continue →</button>
+    <p id="inviteErr" style="margin-top:8px;font-size:12px;color:#dc2626;min-height:18px"></p>
+  </div>
+</div>
+
+<!-- Onboarding modal -->
+<div class="backdrop hidden" id="obBd">
+  <div class="modal" id="obModal" style="max-width:420px">
+    <div class="ob-progress" id="obProgress"></div>
+
+    <div class="ob-step active" id="obStep1">
+      <h2 style="margin-bottom:6px">Welcome! 👶</h2>
+      <p class="ob-helper">We'll tailor every meal to your baby's exact age and development stage.</p>
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Baby's name</label>
+      <input type="text" id="obName" class="ob-input" placeholder="e.g. Aarav" />
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Age in months</label>
+      <input type="number" id="obAge" class="ob-input" placeholder="e.g. 10" min="4" max="36" />
+    </div>
+
+    <div class="ob-step" id="obStep2">
+      <h2 style="margin-bottom:6px">Cuisine preference</h2>
+      <p class="ob-helper">Pick as many as you like. We'll blend flavours your family enjoys.</p>
+      <div class="chip-grid" id="obCuisines">
+        <button class="chip" onclick="toggleChip(this)">Indian</button>
+        <button class="chip" onclick="toggleChip(this)">Western</button>
+        <button class="chip" onclick="toggleChip(this)">Mediterranean</button>
+        <button class="chip" onclick="toggleChip(this)">Mix of everything</button>
+      </div>
+    </div>
+
+    <div class="ob-step" id="obStep3">
+      <h2 style="margin-bottom:6px">Any allergies?</h2>
+      <p class="ob-helper">We already avoid chickpeas, honey, whole nuts &amp; added salt. Add any extras.</p>
+      <div class="chip-grid" id="obAllergies">
+        <button class="chip" onclick="toggleChip(this)">Dairy</button>
+        <button class="chip" onclick="toggleChip(this)">Eggs</button>
+        <button class="chip" onclick="toggleChip(this)">Nuts</button>
+        <button class="chip" onclick="toggleChip(this)">Soy</button>
+        <button class="chip" onclick="toggleChip(this)">Gluten</button>
+      </div>
+      <input type="text" id="obAllergyNote" class="ob-input" placeholder="Anything else? (optional)" />
+    </div>
+
+    <div class="ob-step" id="obStep4">
+      <h2 style="margin-bottom:6px">Meal style</h2>
+      <button class="ob-option" onclick="selectOption(this,'obMealStyle')" data-val="Quick &amp; simple">
+        <div class="ob-opt-title">Quick &amp; simple</div>
+        <div class="ob-opt-desc">Minimal ingredients, easy prep. Perfect for busy days.</div>
+      </button>
+      <button class="ob-option" onclick="selectOption(this,'obMealStyle')" data-val="More variety">
+        <div class="ob-opt-title">More variety</div>
+        <div class="ob-opt-desc">Different flavours and textures every day.</div>
+      </button>
+      <button class="ob-option" onclick="selectOption(this,'obMealStyle')" data-val="Restaurant-inspired">
+        <div class="ob-opt-title">Restaurant-inspired</div>
+        <div class="ob-opt-desc">Elevated recipes with interesting spice combos.</div>
+      </button>
+    </div>
+
+    <div class="ob-step" id="obStep5">
+      <h2 style="margin-bottom:6px">Ingredient style</h2>
+      <button class="ob-option" onclick="selectOption(this,'obIngStyle')" data-val="Single ingredient intro foods">
+        <div class="ob-opt-title">Single ingredient intro foods</div>
+        <div class="ob-opt-desc">Great for identifying new foods one at a time.</div>
+      </button>
+      <button class="ob-option" onclick="selectOption(this,'obIngStyle')" data-val="Mixed meals">
+        <div class="ob-opt-title">Mixed meals</div>
+        <div class="ob-opt-desc">Combines several foods for balanced nutrition.</div>
+      </button>
+      <button class="ob-option" onclick="selectOption(this,'obIngStyle')" data-val="Both">
+        <div class="ob-opt-title">Both</div>
+        <div class="ob-opt-desc">Mix of simple intros and combined dishes.</div>
+      </button>
+    </div>
+
+    <div class="ob-step" id="obStep6">
+      <h2 style="margin-bottom:6px">Texture stage</h2>
+      <button class="ob-option" onclick="selectOption(this,'obTexture')" data-val="Just starting solids">
+        <div class="ob-opt-title">Just starting solids</div>
+        <div class="ob-opt-desc">Very soft, easy to squish. Simple shapes.</div>
+      </button>
+      <button class="ob-option" onclick="selectOption(this,'obTexture')" data-val="Getting confident">
+        <div class="ob-opt-title">Getting confident</div>
+        <div class="ob-opt-desc">Slightly more texture. Small soft chunks.</div>
+      </button>
+      <button class="ob-option" onclick="selectOption(this,'obTexture')" data-val="Eating everything">
+        <div class="ob-opt-title">Eating everything</div>
+        <div class="ob-opt-desc">Handles most soft finger foods well.</div>
+      </button>
+    </div>
+
+    <div class="ob-nav">
+      <button class="ob-back" id="obBackBtn" onclick="obBack()" style="visibility:hidden">← Back</button>
+      <button class="ob-next" id="obNextBtn" onclick="obNext()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Feedback modal -->
+<div class="backdrop hidden" id="feedbackBd">
+  <div class="modal">
+    <h2>📝 Send Feedback</h2>
+    <p class="modal-desc">What's working? What could be better? We read every message.</p>
+    <textarea id="feedbackInput" class="ob-input" rows="5" placeholder="Your feedback…" style="resize:vertical;min-height:100px"></textarea>
+    <button class="modal-btn" id="feedbackBtn" onclick="sendFeedback()">Send</button>
+    <p id="feedbackMsg" style="text-align:center;margin-top:8px;font-size:12px;min-height:18px"></p>
+  </div>
+</div>
+
+<!-- Tour overlay -->
+<div class="tour-overlay hidden" id="tourOverlay"><div class="tour-highlight" id="tourHighlight"></div><div class="tour-tooltip" id="tourTooltip"></div></div>
 
 <!-- Creative recipe popup -->
 <div class="creative-bd hidden" id="creativeBd" onclick="if(event.target===this)this.classList.add('hidden')">
@@ -567,7 +722,13 @@ const CATEGORIES = [
 ];
 
 /* ── Helpers ── */
-function getBabyAge() { return parseInt(localStorage.getItem('babyAge') || '10', 10); }
+function getProfile() {
+  try { return JSON.parse(localStorage.getItem('babyProfile') || '{}'); } catch { return {}; }
+}
+function getBabyAge() {
+  const p = getProfile();
+  return parseInt(p.age || localStorage.getItem('babyAge') || '10', 10);
+}
 function mk(tag, cls) { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function chatMd(s) {
@@ -581,6 +742,7 @@ function chatMd(s) {
 /* ── System prompts ── */
 function getConstraints() {
   const age = getBabyAge();
+  const p = getProfile();
   return `Baby constraints for a ${age}-month-old:
 - VEGETARIAN ONLY. NO besan/chickpea flour (chickpea allergy). No chickpeas.
 - HAND-HELD FINGER FOODS ONLY — self-feedable pieces, no purées, no spoon-fed dishes.
@@ -588,7 +750,14 @@ function getConstraints() {
 - GHEE DAILY — at least one meal per day must include ghee.
 - UNDER 30 MINUTES total prep+cook per recipe.
 - SAFETY: No honey (botulism), no whole nuts (choking), no raw hard veg, no added salt, no refined sugar. Cow milk fine in cooking. Piece size: adult thumb tip.
-- GOOD PROTEINS: tofu, paneer, eggs, cheese, yogurt (baked in), dal-based patties (no besan).`;
+- GOOD PROTEINS: tofu, paneer, eggs, cheese, yogurt (baked in), dal-based patties (no besan).
+
+Profile notes:
+- Cuisines: ${p.cuisines?.join(', ') || 'any'}
+- Additional allergies: ${[...(p.allergies||[]), p.allergyNote].filter(Boolean).join(', ') || 'none'}
+- Meal style: ${p.mealStyle || 'any'}
+- Ingredient style: ${p.ingredientStyle || 'any'}
+- Texture stage: ${p.textureStage || 'any'}`;
 }
 
 function getSystem() {
@@ -603,12 +772,13 @@ STRICT RULES — no exceptions:
 5. UNDER 30 MINUTES — total prep + cook time ≤ 30 min per recipe.
 6. SAFETY: No honey (botulism), no whole nuts (choking), no raw hard veg, no added salt, no refined sugar. Cow milk fine in cooking. Piece size: adult thumb tip.
 7. PROTEINS: tofu, paneer, eggs, cheese, yogurt (baked in), dal-based patties (no besan), well-mashed legumes inside baked shell.
+8. CREATIVE NAMES: meal names must be descriptive and appetising, 3–6 words, like "Turmeric Sweet Potato Wedges" or "Spinach Paneer Soft Parcels". Avoid generic names like "Paneer Fingers" or "Vegetable Patty".
 
 Return ONLY a raw JSON object — no markdown fences, no explanation, nothing before or after the opening brace:
 {
   "plan": {
     "Mon": {
-      "breakfast": {"name":"2–4 word name","emoji":"🍌","time":"15 min","recipe":"Step-by-step plain text, each step on its own numbered line","ingredients":["1 ripe banana","1 tsp ghee"]},
+      "breakfast": {"name":"3–6 word creative name","emoji":"🍌","time":"15 min","recipe":"Step-by-step plain text, each step on its own numbered line","ingredients":["1 ripe banana","1 tsp ghee"]},
       "lunch":  { same shape },
       "dinner": { same shape }
     },
@@ -621,9 +791,9 @@ Return ONLY a raw JSON object — no markdown fences, no explanation, nothing be
 function getSlimSystem() {
   const age = getBabyAge();
   return `You are a meal planner for a ${age}-month-old vegetarian baby.
-STRICT RULES: vegetarian only, no besan/chickpeas, finger foods only, ghee daily, under 30 min, no honey/whole nuts/added salt/refined sugar.
+STRICT RULES: vegetarian only, no besan/chickpeas, finger foods only, ghee daily, under 30 min, no honey/whole nuts/added salt/refined sugar. CREATIVE NAMES: meal names must be descriptive and appetising, 3–6 words, like "Turmeric Sweet Potato Wedges" or "Spinach Paneer Soft Parcels". Avoid generic names.
 Return ONLY a raw JSON object — no markdown, no explanation:
-{"plan":{"Mon":{"breakfast":{"name":"2-4 word name","emoji":"🍌","time":"15 min"},"lunch":{"name":"...","emoji":"...","time":"..."},"dinner":{"name":"...","emoji":"...","time":"..."}},"Tue":{…},"Wed":{…},"Thu":{…},"Fri":{…},"Sat":{…},"Sun":{…}}}`;
+{"plan":{"Mon":{"breakfast":{"name":"3-6 word creative name","emoji":"🍌","time":"15 min"},"lunch":{"name":"...","emoji":"...","time":"..."},"dinner":{"name":"...","emoji":"...","time":"..."}},"Tue":{…},"Wed":{…},"Thu":{…},"Fri":{…},"Sat":{…},"Sun":{…}}}`;
 }
 function getRecipeSystem() {
   return `${getConstraints()}
@@ -714,6 +884,12 @@ window.addEventListener('load', () => {
       if (!document.getElementById('creativeBd').classList.contains('hidden')) document.getElementById('creativeBd').classList.add('hidden');
     }
   });
+
+  if (!localStorage.getItem('inviteCode')) {
+    document.getElementById('inviteBd').classList.remove('hidden');
+  } else {
+    checkOnboarding();
+  }
 });
 
 /* ── Week / date ── */
@@ -1072,6 +1248,17 @@ async function generate() {
   const btn = document.getElementById('genBtn');
   btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Generating…';
   try {
+    const codeId = localStorage.getItem('codeId');
+    if (codeId) {
+      const limitRes = await fetch('/api/check-limit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({codeId}) });
+      const limitData = await limitRes.json();
+      if (!limitData.allowed) {
+        btn.innerHTML = plan ? '<span>✨</span> Regenerate' : '<span>✨</span> Generate Plan';
+        btn.disabled = false;
+        alert(`Daily limit reached (2 plans/day). Resets at midnight UTC.\n${limitData.remaining ?? 0} remaining today.`);
+        return;
+      }
+    }
     const resp = await apiCall(getSlimSystem(), [{ role:'user', content:'Generate a complete 7-day meal plan. Return only the JSON.' }], false, 2048);
     if (!resp.ok) { const e = await resp.json().catch(()=>{}); throw new Error(e?.error?.message || `HTTP ${resp.status}`); }
     const data = await resp.json();
@@ -1083,6 +1270,9 @@ async function generate() {
     localStorage.setItem('mealPlan_v2', JSON.stringify(plan));
     fillGrid(plan); fillGrocery(plan);
     btn.innerHTML = '<span>✨</span> Regenerate';
+    if (codeId) {
+      fetch('/api/increment-usage', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({codeId}) });
+    }
   } catch (err) {
     alert('Generation failed: ' + err.message);
     btn.innerHTML = plan ? '<span>✨</span> Regenerate' : '<span>✨</span> Generate Plan';
@@ -1325,7 +1515,7 @@ function parseSwapIntent(text) {
 async function generateChatMeal(day, meal, userText, typingEl) {
   const system = `${getConstraints()}
 Generate ONE ${meal} meal. Return ONLY raw JSON (no markdown, no extra text):
-{"name":"2-4 word name","emoji":"🍽️","time":"X min","ingredients":["item with quantity"],"recipe":"Numbered step-by-step recipe"}`;
+{"name":"3-6 word creative name","emoji":"🍽️","time":"X min","ingredients":["item with quantity"],"recipe":"Numbered step-by-step recipe"}`;
   const existing = plan?.plan?.[day]?.[meal];
   const note = existing ? `Currently "${existing.name}". ` : '';
   const resp = await apiCall(system, [{ role:'user', content:`${note}Generate a ${meal} for ${day}. User request: "${userText}"` }], false, 800);
@@ -1437,6 +1627,195 @@ async function sendChat() {
 
   chatBusy = false;
   document.getElementById('chatSendBtn').disabled = false;
+}
+
+/* ── Invite code ── */
+async function redeemCode() {
+  const code = document.getElementById('inviteInput').value.trim().toUpperCase();
+  if (!code) return;
+  const btn = document.getElementById('inviteBtn');
+  btn.disabled = true; btn.textContent = 'Checking…';
+  document.getElementById('inviteErr').textContent = '';
+  try {
+    const r = await fetch('/api/redeem-code', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({code}) });
+    const data = await r.json();
+    if (data.valid) {
+      localStorage.setItem('inviteCode', code);
+      localStorage.setItem('codeId', data.codeId);
+      document.getElementById('inviteBd').classList.add('hidden');
+      checkOnboarding();
+    } else {
+      document.getElementById('inviteErr').textContent = data.message || 'Invalid or already used code.';
+      btn.disabled = false; btn.textContent = 'Continue →';
+    }
+  } catch {
+    document.getElementById('inviteErr').textContent = 'Network error. Try again.';
+    btn.disabled = false; btn.textContent = 'Continue →';
+  }
+}
+
+/* ── Onboarding check ── */
+function checkOnboarding() {
+  if (!localStorage.getItem('onboarded')) {
+    openOnboarding();
+  } else if (!localStorage.getItem('tourDone')) {
+    startTour();
+  }
+}
+
+/* ── Onboarding ── */
+let obCurrentStep = 1;
+const OB_TOTAL = 6;
+
+function openOnboarding() {
+  obCurrentStep = 1;
+  document.getElementById('obBd').classList.remove('hidden');
+  renderObProgress();
+  for (let i = 1; i <= OB_TOTAL; i++) {
+    const el = document.getElementById('obStep' + i);
+    if (el) el.classList.toggle('active', i === 1);
+  }
+  document.getElementById('obBackBtn').style.visibility = 'hidden';
+  document.getElementById('obNextBtn').textContent = 'Next →';
+}
+
+function renderObProgress() {
+  const el = document.getElementById('obProgress');
+  el.innerHTML = '';
+  for (let i = 1; i <= OB_TOTAL; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'ob-dot' + (i <= obCurrentStep ? ' done' : '');
+    el.appendChild(dot);
+  }
+}
+
+function toggleChip(btn) {
+  btn.classList.toggle('sel');
+}
+
+function selectOption(btn, groupId) {
+  btn.closest('.ob-step').querySelectorAll('.ob-option').forEach(o => o.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+function obNext() {
+  if (obCurrentStep === OB_TOTAL) { completeOnboarding(); return; }
+  const curr = document.getElementById('obStep' + obCurrentStep);
+  if (curr) curr.classList.remove('active');
+  obCurrentStep++;
+  const next = document.getElementById('obStep' + obCurrentStep);
+  if (next) next.classList.add('active');
+  document.getElementById('obBackBtn').style.visibility = obCurrentStep > 1 ? 'visible' : 'hidden';
+  document.getElementById('obNextBtn').textContent = obCurrentStep === OB_TOTAL ? "Let's go!" : 'Next →';
+  renderObProgress();
+}
+
+function obBack() {
+  if (obCurrentStep <= 1) return;
+  const curr = document.getElementById('obStep' + obCurrentStep);
+  if (curr) curr.classList.remove('active');
+  obCurrentStep--;
+  const prev = document.getElementById('obStep' + obCurrentStep);
+  if (prev) prev.classList.add('active');
+  document.getElementById('obBackBtn').style.visibility = obCurrentStep > 1 ? 'visible' : 'hidden';
+  document.getElementById('obNextBtn').textContent = obCurrentStep === OB_TOTAL ? "Let's go!" : 'Next →';
+  renderObProgress();
+}
+
+function completeOnboarding() {
+  const name = document.getElementById('obName').value.trim();
+  const age  = document.getElementById('obAge').value.trim();
+  const cuisines = [...document.querySelectorAll('#obCuisines .chip.sel')].map(c => c.textContent);
+  const allergies = [...document.querySelectorAll('#obAllergies .chip.sel')].map(c => c.textContent);
+  const allergyNote = document.getElementById('obAllergyNote').value.trim();
+  const mealStyleEl = document.querySelector('#obStep4 .ob-option.sel');
+  const ingStyleEl  = document.querySelector('#obStep5 .ob-option.sel');
+  const textureEl   = document.querySelector('#obStep6 .ob-option.sel');
+  const mealStyle = mealStyleEl ? mealStyleEl.dataset.val : '';
+  const ingredientStyle = ingStyleEl ? ingStyleEl.dataset.val : '';
+  const textureStage = textureEl ? textureEl.dataset.val : '';
+  const profile = { name, age, cuisines, allergies, allergyNote, mealStyle, ingredientStyle, textureStage };
+  localStorage.setItem('babyProfile', JSON.stringify(profile));
+  localStorage.setItem('onboarded', '1');
+  document.getElementById('obBd').classList.add('hidden');
+  setTimeout(startTour, 400);
+}
+
+/* ── Tour ── */
+let tourStep = 0;
+const TOUR_STEPS = [
+  { targetFn: () => document.getElementById('grid'), title: 'Your meal grid', desc: '7 days × 3 meals. Tap any meal to see the full recipe and ingredients.' },
+  { targetFn: () => document.querySelector('.g-cell.filled') || document.getElementById('genBtn'), title: 'Tap a meal', desc: 'See recipe, duplicate it to another day, or edit the name.' },
+  { targetFn: () => document.querySelector('.g-day'), title: 'Tap a day header', desc: 'Opens a full day view with all three meals at once.' },
+  { targetFn: () => document.getElementById('chatFab'), title: 'Ask your assistant', desc: 'Chat with an AI that knows your full meal plan. Ask for swaps, ideas, or ingredient substitutions.' },
+  { targetFn: () => document.getElementById('favSec') || document.querySelector('.c-fav-btn'), title: 'Save favourites', desc: 'Heart any meal to save it. Favourites appear here so you can add them back to future plans.' },
+  { targetFn: () => document.querySelector('.icon-btn[title="Creative recipe"]'), title: 'Surprise recipe', desc: 'Tap for a randomly invented creative finger food.' },
+];
+
+function startTour() {
+  tourStep = 0;
+  document.getElementById('tourOverlay').classList.remove('hidden');
+  showTourStep(0);
+}
+
+function showTourStep(i) {
+  const step = TOUR_STEPS[i];
+  if (!step) { endTour(); return; }
+  const target = step.targetFn();
+  const overlay = document.getElementById('tourOverlay');
+  const highlight = document.getElementById('tourHighlight');
+  const tooltip = document.getElementById('tourTooltip');
+  if (!target) { tourStep++; showTourStep(tourStep); return; }
+  const rect = target.getBoundingClientRect();
+  const pad = 6;
+  highlight.style.top    = (rect.top - pad + window.scrollY) + 'px';
+  highlight.style.left   = (rect.left - pad) + 'px';
+  highlight.style.width  = (rect.width + pad * 2) + 'px';
+  highlight.style.height = (rect.height + pad * 2) + 'px';
+  const isLast = i === TOUR_STEPS.length - 1;
+  tooltip.innerHTML = `<div class="tour-tt-title">${step.title}</div><div class="tour-tt-desc">${step.desc}</div><button class="tour-btn" onclick="tourNext()">${isLast ? 'Done' : 'Next'}</button>`;
+  const ttW = 260, ttH = 110;
+  let ttTop = rect.bottom + pad + 10 + window.scrollY;
+  let ttLeft = rect.left;
+  if (ttTop + ttH > window.innerHeight + window.scrollY) ttTop = rect.top - ttH - pad - 10 + window.scrollY;
+  if (ttLeft + ttW > window.innerWidth) ttLeft = window.innerWidth - ttW - 12;
+  if (ttLeft < 8) ttLeft = 8;
+  tooltip.style.top  = ttTop + 'px';
+  tooltip.style.left = ttLeft + 'px';
+}
+
+function tourNext() {
+  tourStep++;
+  if (tourStep >= TOUR_STEPS.length) { endTour(); return; }
+  showTourStep(tourStep);
+}
+
+function endTour() {
+  localStorage.setItem('tourDone', '1');
+  document.getElementById('tourOverlay').classList.add('hidden');
+}
+
+/* ── Feedback ── */
+function openFeedback() {
+  document.getElementById('feedbackInput').value = '';
+  document.getElementById('feedbackMsg').textContent = '';
+  document.getElementById('feedbackBd').classList.remove('hidden');
+}
+async function sendFeedback() {
+  const msg = document.getElementById('feedbackInput').value.trim();
+  if (!msg) return;
+  const btn = document.getElementById('feedbackBtn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    await fetch('/api/feedback', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message: msg}) });
+    document.getElementById('feedbackMsg').textContent = 'Thanks! We got your feedback.';
+    document.getElementById('feedbackMsg').style.color = '#16a34a';
+    setTimeout(() => document.getElementById('feedbackBd').classList.add('hidden'), 1500);
+  } catch {
+    document.getElementById('feedbackMsg').textContent = 'Failed to send. Try again.';
+    document.getElementById('feedbackMsg').style.color = '#dc2626';
+  }
+  btn.disabled = false; btn.textContent = 'Send';
 }
 </script>
 </body>
