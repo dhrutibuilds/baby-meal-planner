@@ -437,12 +437,13 @@
     .ob-next:hover { background:var(--or-dk) }
 
     /* ── Tour ── */
-    .tour-overlay { position:fixed; inset:0; z-index:500; pointer-events:none; }
-    .tour-highlight { position:fixed; border:3px solid var(--or); border-radius:12px; pointer-events:none; transition:all .3s; z-index:501; box-shadow:0 0 0 2px rgba(249,115,22,.4); }
+    .tour-overlay { position:fixed; inset:0; z-index:600; pointer-events:none; }
+    .tour-overlay.hidden { display:none; }
+    .tour-highlight { position:fixed; border:3px solid var(--or); border-radius:12px; pointer-events:none; transition:all .3s; z-index:601; box-shadow:0 0 0 2px rgba(249,115,22,.4); }
     .tour-tooltip {
       position:fixed; background:#fff; border-radius:16px; padding:16px 18px;
-      max-width:260px; box-shadow:0 8px 32px rgba(0,0,0,.22);
-      z-index:502; pointer-events:all;
+      max-width:270px; box-shadow:0 8px 32px rgba(0,0,0,.22);
+      z-index:602; pointer-events:all;
     }
     .tour-tt-title { font-size:15px; font-weight:700; margin-bottom:4px; }
     .tour-tt-desc  { font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:12px; }
@@ -455,7 +456,7 @@
   <span class="hdr-icon">🥕</span>
   <div class="hdr-txt">
     <h1>Baby Meal Planner</h1>
-    <p>Vegetarian · Finger foods · Under 30 min · Ghee daily</p>
+    <p id="hdrSub">Finger foods · Personalised meals</p>
   </div>
   <button class="icon-btn" onclick="getCreative()" title="Creative recipe">🎲</button>
   <button class="icon-btn" onclick="openFeedback()" title="Send feedback">📝</button>
@@ -489,6 +490,17 @@
     </div>
 
     <div class="ob-step" id="obStep2">
+      <h2 style="margin-bottom:6px">Diet type</h2>
+      <p class="ob-helper">We'll respect this in every recipe we create.</p>
+      <div class="chip-grid" id="obDiet">
+        <button class="chip" onclick="toggleSingleChip(this,'obDiet')">Vegetarian</button>
+        <button class="chip" onclick="toggleSingleChip(this,'obDiet')">Vegan</button>
+        <button class="chip" onclick="toggleSingleChip(this,'obDiet')">Eggetarian</button>
+        <button class="chip" onclick="toggleSingleChip(this,'obDiet')">Non-vegetarian</button>
+      </div>
+    </div>
+
+    <div class="ob-step" id="obStep3">
       <h2 style="margin-bottom:6px">Cuisine preference</h2>
       <p class="ob-helper">Pick as many as you like. We'll blend flavours your family enjoys.</p>
       <div class="chip-grid" id="obCuisines">
@@ -499,7 +511,7 @@
       </div>
     </div>
 
-    <div class="ob-step" id="obStep3">
+    <div class="ob-step" id="obStep4">
       <h2 style="margin-bottom:6px">Any allergies?</h2>
       <p class="ob-helper">We already avoid chickpeas, honey, whole nuts &amp; added salt. Add any extras.</p>
       <div class="chip-grid" id="obAllergies">
@@ -512,7 +524,7 @@
       <input type="text" id="obAllergyNote" class="ob-input" placeholder="Anything else? (optional)" />
     </div>
 
-    <div class="ob-step" id="obStep4">
+    <div class="ob-step" id="obStep5">
       <h2 style="margin-bottom:6px">Meal style</h2>
       <button class="ob-option" onclick="selectOption(this,'obMealStyle')" data-val="Quick &amp; simple">
         <div class="ob-opt-title">Quick &amp; simple</div>
@@ -528,7 +540,7 @@
       </button>
     </div>
 
-    <div class="ob-step" id="obStep5">
+    <div class="ob-step" id="obStep6">
       <h2 style="margin-bottom:6px">Ingredient style</h2>
       <button class="ob-option" onclick="selectOption(this,'obIngStyle')" data-val="Single ingredient intro foods">
         <div class="ob-opt-title">Single ingredient intro foods</div>
@@ -544,7 +556,7 @@
       </button>
     </div>
 
-    <div class="ob-step" id="obStep6">
+    <div class="ob-step" id="obStep7">
       <h2 style="margin-bottom:6px">Texture stage</h2>
       <button class="ob-option" onclick="selectOption(this,'obTexture')" data-val="Just starting solids">
         <div class="ob-opt-title">Just starting solids</div>
@@ -558,6 +570,12 @@
         <div class="ob-opt-title">Eating everything</div>
         <div class="ob-opt-desc">Handles most soft finger foods well.</div>
       </button>
+    </div>
+
+    <div class="ob-step" id="obStep8">
+      <h2 style="margin-bottom:6px">Anything else? <span style="font-size:14px;font-weight:400;color:var(--muted)">(optional)</span></h2>
+      <p class="ob-helper">E.g. "loves sweet foods", "avoid strong spices", "has 4 teeth". Every detail helps us personalise further.</p>
+      <textarea id="obCustomNotes" class="ob-input" rows="4" placeholder="Type any notes here…" style="resize:vertical;min-height:90px"></textarea>
     </div>
 
     <p class="ob-err" id="obErr"></p>
@@ -747,26 +765,54 @@ function chatMd(s) {
 function getConstraints() {
   const age = getBabyAge();
   const p = getProfile();
-  return `Baby constraints for a ${age}-month-old:
-- VEGETARIAN ONLY. NO besan/chickpea flour (chickpea allergy). No chickpeas.
+  const diet = p.dietType || 'Vegetarian';
+  const isVegan = diet === 'Vegan';
+  const isNonVeg = diet === 'Non-vegetarian';
+  const isEgg = diet === 'Eggetarian';
+
+  let dietRule, fatRule, proteinRule;
+  if (isVegan) {
+    dietRule = 'VEGAN ONLY. No meat, fish, seafood, dairy, or eggs. Use coconut oil or olive oil — no ghee.';
+    fatRule   = '- HEALTHY FAT DAILY — every day must include coconut oil or olive oil.';
+    proteinRule = '- GOOD PROTEINS: tofu, tempeh, dal-based patties (no besan), well-mashed legumes in baked shells.';
+  } else if (isNonVeg) {
+    dietRule = 'May include meat, poultry, fish, and eggs. ABSOLUTELY NO besan/chickpea flour — confirmed chickpea allergy.';
+    fatRule   = '- GHEE DAILY — at least one meal per day must include ghee.';
+    proteinRule = '- GOOD PROTEINS: soft chicken pieces, flaked fish, eggs, tofu, paneer, dal-based patties (no besan).';
+  } else if (isEgg) {
+    dietRule = 'VEGETARIAN + EGGS allowed. No meat or fish. ABSOLUTELY NO besan/chickpea flour — confirmed chickpea allergy.';
+    fatRule   = '- GHEE DAILY — at least one meal per day must include ghee.';
+    proteinRule = '- GOOD PROTEINS: eggs, tofu, paneer, cheese, yogurt (baked in), dal-based patties (no besan).';
+  } else {
+    dietRule = 'VEGETARIAN ONLY. No meat, fish, seafood, or eggs. ABSOLUTELY NO besan/chickpea flour — confirmed chickpea allergy. No chickpeas in any form.';
+    fatRule   = '- GHEE DAILY — at least one meal per day must include ghee.';
+    proteinRule = '- GOOD PROTEINS: tofu, paneer, cheese, yogurt (baked in), dal-based patties (no besan).';
+  }
+
+  const customLine = p.customNotes ? `\n- Parent notes: ${p.customNotes}` : '';
+
+  return `Baby constraints for a ${age}-month-old (${diet} diet):
+- ${dietRule}
 - HAND-HELD FINGER FOODS ONLY — self-feedable pieces, no purées, no spoon-fed dishes.
 - TEXTURE: soft inside (gummable without teeth), holds shape. No hard/crunchy/crumbly/sticky.
-- GHEE DAILY — at least one meal per day must include ghee.
+${fatRule}
 - UNDER 30 MINUTES total prep+cook per recipe.
-- SAFETY: No honey (botulism), no whole nuts (choking), no raw hard veg, no added salt, no refined sugar. Cow milk fine in cooking. Piece size: adult thumb tip.
-- GOOD PROTEINS: tofu, paneer, eggs, cheese, yogurt (baked in), dal-based patties (no besan).
+- SAFETY: No honey (botulism), no whole nuts (choking), no raw hard veg, no added salt, no refined sugar. Piece size: adult thumb tip.
+${proteinRule}
 
-Profile notes:
+Profile:
+- Diet: ${diet}
 - Cuisines: ${p.cuisines?.join(', ') || 'any'}
 - Additional allergies: ${[...(p.allergies||[]), p.allergyNote].filter(Boolean).join(', ') || 'none'}
 - Meal style: ${p.mealStyle || 'any'}
 - Ingredient style: ${p.ingredientStyle || 'any'}
-- Texture stage: ${p.textureStage || 'any'}`;
+- Texture stage: ${p.textureStage || 'any'}${customLine}`;
 }
 
 function getSystem() {
   const age = getBabyAge();
-  return `You are a meal planner for a ${age}-month-old vegetarian baby.
+  const diet = getProfile().dietType || 'Vegetarian';
+  return `You are a meal planner for a ${age}-month-old baby (${diet} diet).
 
 STRICT RULES — no exceptions:
 1. VEGETARIAN ONLY. No meat, fish, seafood, gelatin. ABSOLUTELY NO besan (chickpea flour / gram flour) — confirmed chickpea allergy. No chickpeas in any form.
@@ -794,8 +840,9 @@ Return ONLY a raw JSON object — no markdown fences, no explanation, nothing be
 
 function getSlimSystem() {
   const age = getBabyAge();
-  return `You are a meal planner for a ${age}-month-old vegetarian baby.
-STRICT RULES: vegetarian only, no besan/chickpeas, finger foods only, ghee daily, under 30 min, no honey/whole nuts/added salt/refined sugar. CREATIVE NAMES: meal names must be descriptive and appetising, 3–6 words, like "Turmeric Sweet Potato Wedges" or "Spinach Paneer Soft Parcels". Avoid generic names.
+  const diet = getProfile().dietType || 'Vegetarian';
+  return `You are a meal planner for a ${age}-month-old baby (${diet} diet).
+STRICT RULES: ${diet.toLowerCase()} diet, no besan/chickpeas, finger foods only, ghee daily (or oil if vegan), under 30 min, no honey/whole nuts/added salt/refined sugar. CREATIVE NAMES: meal names must be descriptive and appetising, 3–6 words, like "Turmeric Sweet Potato Wedges" or "Spinach Paneer Soft Parcels". Avoid generic names.
 Return ONLY a raw JSON object — no markdown, no explanation:
 {"plan":{"Mon":{"breakfast":{"name":"3-6 word creative name","emoji":"🍌","time":"15 min"},"lunch":{"name":"...","emoji":"...","time":"..."},"dinner":{"name":"...","emoji":"...","time":"..."}},"Tue":{…},"Wed":{…},"Thu":{…},"Fri":{…},"Sat":{…},"Sun":{…}}}`;
 }
@@ -813,7 +860,8 @@ function getChatSystem() {
       return meals ? `${day}: ${meals}` : null;
     }).filter(Boolean).join('\n');
   }
-  return `You are a warm, knowledgeable baby meal assistant for a ${age}-month-old vegetarian baby.
+  const diet = getProfile().dietType || 'Vegetarian';
+  return `You are a warm, knowledgeable baby meal assistant for a ${age}-month-old baby (${diet} diet).
 
 CURRENT WEEK'S MEAL PLAN:
 ${planSummary}
@@ -825,7 +873,8 @@ Answer questions about the plan, suggest swaps, give recipe ideas. Keep response
 
 function getCreativeSystem() {
   const age = getBabyAge();
-  return `You are a creative baby finger food inventor for a ${age}-month-old vegetarian baby.
+  const diet = getProfile().dietType || 'Vegetarian';
+  return `You are a creative baby finger food inventor for a ${age}-month-old baby (${diet} diet).
 
 ${getConstraints()}
 
@@ -862,6 +911,7 @@ window.addEventListener('load', () => {
   buildEmptyGrid();
   loadStatus();
   loadFavourites(); renderFavourites();
+  updateHeaderSub();
 
   const saved = localStorage.getItem('mealPlan_v2');
   if (saved) {
@@ -1669,7 +1719,7 @@ function checkOnboarding() {
 
 /* ── Onboarding ── */
 let obCurrentStep = 1;
-const OB_TOTAL = 6;
+const OB_TOTAL = 8;
 
 function openOnboarding() {
   obCurrentStep = 1;
@@ -1697,9 +1747,23 @@ function toggleChip(btn) {
   btn.classList.toggle('sel');
 }
 
+function toggleSingleChip(btn, groupId) {
+  document.getElementById(groupId).querySelectorAll('.chip').forEach(c => c.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
 function selectOption(btn, groupId) {
   btn.closest('.ob-step').querySelectorAll('.ob-option').forEach(o => o.classList.remove('sel'));
   btn.classList.add('sel');
+}
+
+function updateHeaderSub() {
+  const p = getProfile();
+  const parts = [];
+  if (p.name) parts.push(p.name + "'s meals");
+  if (p.dietType) parts.push(p.dietType);
+  parts.push('Finger foods');
+  document.getElementById('hdrSub').textContent = parts.join(' · ');
 }
 
 function obShake(msg) {
@@ -1722,11 +1786,12 @@ function obNext() {
     if (!document.querySelector('#obStep' + obCurrentStep + ' .chip.sel')) {
       obShake('Pick at least one option to continue.'); return;
     }
-  } else if (obCurrentStep >= 4) {
+  } else if (obCurrentStep >= 5 && obCurrentStep <= 7) {
     if (!document.querySelector('#obStep' + obCurrentStep + ' .ob-option.sel')) {
       obShake('Pick an option to continue.'); return;
     }
   }
+  // step 4 (allergies) and step 8 (custom notes) are optional
   if (obCurrentStep === OB_TOTAL) { completeOnboarding(); return; }
   const curr = document.getElementById('obStep' + obCurrentStep);
   if (curr) curr.classList.remove('active');
@@ -1753,19 +1818,23 @@ function obBack() {
 function completeOnboarding() {
   const name = document.getElementById('obName').value.trim();
   const age  = document.getElementById('obAge').value.trim();
+  const dietTypeEl = document.querySelector('#obDiet .chip.sel');
+  const dietType = dietTypeEl ? dietTypeEl.textContent : 'Vegetarian';
   const cuisines = [...document.querySelectorAll('#obCuisines .chip.sel')].map(c => c.textContent);
   const allergies = [...document.querySelectorAll('#obAllergies .chip.sel')].map(c => c.textContent);
   const allergyNote = document.getElementById('obAllergyNote').value.trim();
-  const mealStyleEl = document.querySelector('#obStep4 .ob-option.sel');
-  const ingStyleEl  = document.querySelector('#obStep5 .ob-option.sel');
-  const textureEl   = document.querySelector('#obStep6 .ob-option.sel');
+  const mealStyleEl = document.querySelector('#obStep5 .ob-option.sel');
+  const ingStyleEl  = document.querySelector('#obStep6 .ob-option.sel');
+  const textureEl   = document.querySelector('#obStep7 .ob-option.sel');
   const mealStyle = mealStyleEl ? mealStyleEl.dataset.val : '';
   const ingredientStyle = ingStyleEl ? ingStyleEl.dataset.val : '';
   const textureStage = textureEl ? textureEl.dataset.val : '';
-  const profile = { name, age, cuisines, allergies, allergyNote, mealStyle, ingredientStyle, textureStage };
+  const customNotes = document.getElementById('obCustomNotes').value.trim();
+  const profile = { name, age, dietType, cuisines, allergies, allergyNote, mealStyle, ingredientStyle, textureStage, customNotes };
   localStorage.setItem('babyProfile', JSON.stringify(profile));
   localStorage.setItem('onboarded', '1');
   document.getElementById('obBd').classList.add('hidden');
+  updateHeaderSub();
   setTimeout(startTour, 400);
 }
 
@@ -1781,6 +1850,10 @@ const TOUR_STEPS = [
 ];
 
 function startTour() {
+  ['feedbackBd','addToPlanBd','obBd'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
   tourStep = 0;
   document.getElementById('tourOverlay').classList.remove('hidden');
   showTourStep(0);
@@ -1801,7 +1874,7 @@ function showTourStep(i) {
   highlight.style.width  = (rect.width + pad * 2) + 'px';
   highlight.style.height = (rect.height + pad * 2) + 'px';
   const isLast = i === TOUR_STEPS.length - 1;
-  tooltip.innerHTML = `<div class="tour-tt-title">${step.title}</div><div class="tour-tt-desc">${step.desc}</div><button class="tour-btn" onclick="tourNext()">${isLast ? 'Done' : 'Next'}</button>`;
+  tooltip.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div class="tour-tt-title">${step.title}</div><button onclick="endTour()" style="background:none;border:none;font-size:16px;cursor:pointer;color:#78716c;padding:0;line-height:1;flex-shrink:0">✕</button></div><div class="tour-tt-desc">${step.desc}</div><button class="tour-btn" onclick="tourNext()">${isLast ? 'Done' : 'Next →'}</button>`;
   const ttW = 260, ttH = 120;
   let ttTop = rect.bottom + pad + 10;
   let ttLeft = rect.left;
