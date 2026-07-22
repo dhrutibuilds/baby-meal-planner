@@ -517,6 +517,7 @@
       <div class="chip-grid" id="obCuisines">
         <button class="chip" onclick="toggleChip(this)">Indian</button>
         <button class="chip" onclick="toggleChip(this)">Western</button>
+        <button class="chip" onclick="toggleChip(this)">American</button>
         <button class="chip" onclick="toggleChip(this)">Mediterranean</button>
         <button class="chip" onclick="toggleChip(this)">Mix of everything</button>
       </div>
@@ -820,13 +821,23 @@ Profile:
 - Texture stage: ${p.textureStage || 'any'}${customLine}`;
 }
 
+function getCuisineRule(p) {
+  const cuisines = p.cuisines || [];
+  if (!cuisines.length || cuisines.includes('Mix of everything')) return '';
+  const noIndian = !cuisines.includes('Indian');
+  const indianBan = noIndian ? ' If Indian is not in the list, never generate khichdi, dal dishes, idli, dosa, roti, paratha, sabzi, upma, or any Indian dish.' : '';
+  return `STRICT CUISINE RULE: Only generate meals inspired by these cuisines: ${cuisines.join(', ')}. Do NOT generate dishes from any unselected cuisine.${indianBan}`;
+}
+
 function getSystem() {
   const age = getBabyAge();
-  const diet = getProfile().dietType || 'Vegetarian';
+  const p = getProfile();
+  const diet = p.dietType || 'Vegetarian';
+  const cuisineRule = getCuisineRule(p);
   return `You are a meal planner for a ${age}-month-old baby (${diet} diet).
 
 STRICT RULES — no exceptions:
-1. VEGETARIAN ONLY. No meat, fish, seafood, gelatin. ABSOLUTELY NO besan (chickpea flour / gram flour) — confirmed chickpea allergy. No chickpeas in any form.
+${cuisineRule ? `0. ${cuisineRule}\n` : ''}1. VEGETARIAN ONLY. No meat, fish, seafood, gelatin. ABSOLUTELY NO besan (chickpea flour / gram flour) — confirmed chickpea allergy. No chickpeas in any form.
 2. HAND-HELD FINGER FOODS ONLY. Every item must be self-feedable — a piece the baby picks up and gums independently. No purées, no spoon-fed dishes, no loose sauces.
 3. TEXTURE: soft inside (gummable without teeth), holds shape in small hands. No hard, crunchy, crumbly, or sticky foods.
 4. GHEE DAILY — at least one meal per day must include ghee.
@@ -851,9 +862,11 @@ Return ONLY a raw JSON object — no markdown fences, no explanation, nothing be
 
 function getSlimSystem() {
   const age = getBabyAge();
-  const diet = getProfile().dietType || 'Vegetarian';
+  const p = getProfile();
+  const diet = p.dietType || 'Vegetarian';
+  const cuisineRule = getCuisineRule(p);
   return `You are a meal planner for a ${age}-month-old baby (${diet} diet).
-STRICT RULES: ${diet.toLowerCase()} diet, no besan/chickpeas, finger foods only, ghee daily (or oil if vegan), under 30 min, no honey/whole nuts/added salt/refined sugar. CREATIVE NAMES: meal names must be descriptive and appetising, 3–6 words, like "Turmeric Sweet Potato Wedges" or "Spinach Paneer Soft Parcels". Avoid generic names.
+STRICT RULES: ${cuisineRule ? cuisineRule + ' ' : ''}${diet.toLowerCase()} diet, no besan/chickpeas, finger foods only, ghee daily (or oil if vegan), under 30 min, no honey/whole nuts/added salt/refined sugar. CREATIVE NAMES: meal names must be descriptive and appetising, 3–6 words, like "Turmeric Sweet Potato Wedges" or "Spinach Paneer Soft Parcels". Avoid generic names.
 Return ONLY a raw JSON object — no markdown, no explanation:
 {"plan":{"Mon":{"breakfast":{"name":"3-6 word creative name","emoji":"🍌","time":"15 min"},"lunch":{"name":"...","emoji":"...","time":"..."},"dinner":{"name":"...","emoji":"...","time":"..."}},"Tue":{…},"Wed":{…},"Thu":{…},"Fri":{…},"Sat":{…},"Sun":{…}}}`;
 }
