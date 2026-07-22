@@ -439,15 +439,25 @@
     /* ── Tour ── */
     .tour-overlay { position:fixed; inset:0; z-index:600; pointer-events:none; }
     .tour-overlay.hidden { display:none; }
-    .tour-highlight { position:fixed; border:3px solid var(--or); border-radius:12px; pointer-events:none; transition:all .3s; z-index:601; box-shadow:0 0 0 2px rgba(249,115,22,.4); }
+    .tour-highlight { position:fixed; border:3px solid var(--or); border-radius:12px; pointer-events:none; transition:all .32s cubic-bezier(.34,1.1,.64,1); z-index:601; box-shadow:0 0 0 9999px rgba(0,0,0,.38); }
     .tour-tooltip {
-      position:fixed; background:#fff; border-radius:16px; padding:16px 18px;
-      max-width:270px; box-shadow:0 8px 32px rgba(0,0,0,.22);
-      z-index:602; pointer-events:all;
+      position:fixed; background:#fff; border-radius:18px; overflow:hidden;
+      width:300px; box-shadow:0 12px 40px rgba(0,0,0,.26);
+      z-index:602; pointer-events:all; animation:tourPop .22s cubic-bezier(.34,1.2,.64,1);
     }
-    .tour-tt-title { font-size:15px; font-weight:700; margin-bottom:4px; }
-    .tour-tt-desc  { font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:12px; }
-    .tour-btn { padding:9px 20px; background:var(--or); color:#fff; border:none; border-radius:10px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; }
+    @keyframes tourPop { from { transform:scale(.88); opacity:0; } to { transform:scale(1); opacity:1; } }
+    .tour-tt-head { background:var(--or-lt); padding:12px 14px 10px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--bdr); }
+    .tour-tt-icon { font-size:28px; line-height:1; }
+    .tour-tt-counter { font-size:11px; font-weight:600; color:var(--or-dk); background:rgba(249,115,22,.18); padding:3px 8px; border-radius:100px; }
+    .tour-tt-body { padding:13px 15px 14px; }
+    .tour-tt-title { font-size:14px; font-weight:700; margin-bottom:4px; color:var(--txt); }
+    .tour-tt-desc  { font-size:12.5px; color:var(--muted); line-height:1.55; margin-bottom:10px; }
+    .tour-tt-hint  { font-size:12px; color:var(--or-dk); background:var(--or-lt); border-radius:8px; padding:6px 10px; margin-bottom:11px; line-height:1.4; }
+    .tour-tt-btns  { display:flex; align-items:center; justify-content:space-between; }
+    .tour-btn  { padding:9px 18px; background:var(--or); color:#fff; border:none; border-radius:10px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; transition:background .15s; }
+    .tour-btn:hover { background:var(--or-dk); }
+    .tour-skip { background:none; border:none; font-size:12px; color:var(--muted); cursor:pointer; padding:4px 0; }
+    .tour-skip:hover { color:var(--txt); }
   </style>
 </head>
 <body>
@@ -477,7 +487,8 @@
 
 <!-- Onboarding modal -->
 <div class="backdrop hidden" id="obBd">
-  <div class="modal" id="obModal" style="max-width:420px">
+  <div class="modal" id="obModal" style="max-width:420px;position:relative">
+    <button id="obCloseBtn" onclick="document.getElementById('obBd').classList.add('hidden')" style="display:none;position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1;padding:2px">✕</button>
     <div class="ob-progress" id="obProgress"></div>
 
     <div class="ob-step active" id="obStep1">
@@ -1724,6 +1735,8 @@ const OB_TOTAL = 8;
 function openOnboarding() {
   obCurrentStep = 1;
   document.getElementById('obBd').classList.remove('hidden');
+  const closeBtn = document.getElementById('obCloseBtn');
+  if (closeBtn) closeBtn.style.display = localStorage.getItem('onboarded') === '1' ? 'block' : 'none';
   renderObProgress();
   for (let i = 1; i <= OB_TOTAL; i++) {
     const el = document.getElementById('obStep' + i);
@@ -1841,12 +1854,48 @@ function completeOnboarding() {
 /* ── Tour ── */
 let tourStep = 0;
 const TOUR_STEPS = [
-  { targetFn: () => document.getElementById('grid'), title: 'Your meal grid', desc: '7 days × 3 meals. Tap any meal to see the full recipe and ingredients.' },
-  { targetFn: () => document.querySelector('.g-cell.filled') || document.getElementById('genBtn'), title: 'Tap a meal', desc: 'See recipe, duplicate it to another day, or edit the name.' },
-  { targetFn: () => document.querySelector('.g-day'), title: 'Tap a day header', desc: 'Opens a full day view with all three meals at once.' },
-  { targetFn: () => document.getElementById('chatFab'), title: 'Ask your assistant', desc: 'Chat with an AI that knows your full meal plan. Ask for swaps, ideas, or ingredient substitutions.' },
-  { targetFn: () => document.getElementById('favSec') || document.querySelector('.c-fav-btn'), title: 'Save favourites', desc: 'Heart any meal to save it. Favourites appear here so you can add them back to future plans.' },
-  { targetFn: () => document.querySelector('.icon-btn[title="Creative recipe"]'), title: 'Surprise recipe', desc: 'Tap for a randomly invented creative finger food.' },
+  {
+    targetFn: () => document.getElementById('grid'),
+    icon: '🗓️', title: 'Your meal grid',
+    desc: '7 days × 3 meals, all in one view. Generate a plan and every cell fills with a real recipe.',
+    hint: '👆 Tap any orange meal cell to open it',
+    btn: 'Try it →'
+  },
+  {
+    targetFn: () => document.querySelector('.g-cell.filled') || document.getElementById('genBtn'),
+    icon: '📖', title: 'Full recipe inside',
+    desc: 'Every meal has a step-by-step recipe, ingredients list, and a "Duplicate to…" button to reuse it another day.',
+    hint: null,
+    btn: 'Next →'
+  },
+  {
+    targetFn: () => document.querySelector('.g-day'),
+    icon: '📅', title: 'Day overview',
+    desc: 'Tap a day name to see all three meals for that day together — great for planning ahead.',
+    hint: '👆 Tap Mon, Tue… to open the day view',
+    btn: 'Next →'
+  },
+  {
+    targetFn: () => document.getElementById('chatFab'),
+    icon: '💬', title: 'Your meal assistant',
+    desc: 'Type "change Monday breakfast without banana" and it updates the grid automatically. Ask for swaps, ideas, or recipe help.',
+    hint: null,
+    btn: 'Next →'
+  },
+  {
+    targetFn: () => document.querySelector('.c-fav-btn') || document.getElementById('favSec'),
+    icon: '❤️', title: 'Save favourites',
+    desc: 'Hover any meal card and tap the heart to save it. Pull saved meals back into future plans from the favourites section.',
+    hint: '👆 Hover a meal card to see the heart',
+    btn: 'Next →'
+  },
+  {
+    targetFn: () => document.getElementById('grocerySec') || document.getElementById('genBtn'),
+    icon: '🛒', title: 'Grocery list',
+    desc: 'After generating a plan your full shopping list appears here — auto-sorted by category. Tap items to check them off.',
+    hint: null,
+    btn: 'Got it →'
+  },
 ];
 
 function startTour() {
@@ -1874,8 +1923,23 @@ function showTourStep(i) {
   highlight.style.width  = (rect.width + pad * 2) + 'px';
   highlight.style.height = (rect.height + pad * 2) + 'px';
   const isLast = i === TOUR_STEPS.length - 1;
-  tooltip.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div class="tour-tt-title">${step.title}</div><button onclick="endTour()" style="background:none;border:none;font-size:16px;cursor:pointer;color:#78716c;padding:0;line-height:1;flex-shrink:0">✕</button></div><div class="tour-tt-desc">${step.desc}</div><button class="tour-btn" onclick="tourNext()">${isLast ? 'Done' : 'Next →'}</button>`;
-  const ttW = 260, ttH = 120;
+  const hintHtml = step.hint ? `<div class="tour-tt-hint">${step.hint}</div>` : '';
+  tooltip.innerHTML = `
+    <div class="tour-tt-head">
+      <span class="tour-tt-icon">${step.icon}</span>
+      <span class="tour-tt-counter">${i + 1} of ${TOUR_STEPS.length}</span>
+      <button onclick="endTour()" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--or-dk);padding:0;line-height:1">✕</button>
+    </div>
+    <div class="tour-tt-body">
+      <div class="tour-tt-title">${step.title}</div>
+      <div class="tour-tt-desc">${step.desc}</div>
+      ${hintHtml}
+      <div class="tour-tt-btns">
+        <button class="tour-skip" onclick="endTour()">Skip tour</button>
+        <button class="tour-btn" onclick="tourNext()">${step.btn || (isLast ? 'Got it →' : 'Next →')}</button>
+      </div>
+    </div>`;
+  const ttW = 300, ttH = step.hint ? 210 : 185;
   let ttTop = rect.bottom + pad + 10;
   let ttLeft = rect.left;
   if (ttTop + ttH > window.innerHeight) ttTop = rect.top - ttH - pad - 10;
