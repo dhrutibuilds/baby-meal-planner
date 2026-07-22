@@ -469,6 +469,7 @@
     <p id="hdrSub">Finger foods · Personalised meals</p>
   </div>
   <button class="icon-btn" onclick="getCreative()" title="Creative recipe">🎲</button>
+  <button class="icon-btn" onclick="triggerEmail()" title="Email me this week's plan">📧</button>
   <button class="icon-btn" onclick="openFeedback()" title="Send feedback">📝</button>
   <button class="icon-btn" onclick="openOnboarding()" title="Settings">⚙️</button>
 </header>
@@ -1260,7 +1261,7 @@ function openAddToPlan(favIdx) {
         if (!plan.plan[day]) plan.plan[day] = {};
         plan.plan[day][meal] = {...fav};
         localStorage.setItem('mealPlan_v2', JSON.stringify(plan));
-        fillGrid(plan);
+        fillGrid(plan); fillGrocery(plan);
         document.getElementById('addToPlanBd').classList.add('hidden');
       };
       row.appendChild(btn);
@@ -1975,6 +1976,20 @@ function endTour() {
 }
 
 /* ── Feedback ── */
+async function triggerEmail() {
+  try {
+    const btn = document.querySelector('.icon-btn[title="Email me this week\'s plan"]');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+    const r = await fetch('/api/trigger-email', { method: 'POST' });
+    const d = await r.json();
+    if (btn) { btn.disabled = false; btn.textContent = '📧'; }
+    if (d.ok) alert('📧 Email sent! Check dhru2292@gmail.com in a moment.');
+    else alert('Failed to trigger email.');
+  } catch {
+    alert('Failed to trigger email. Try again.');
+  }
+}
+
 function openFeedback() {
   document.getElementById('feedbackInput').value = '';
   document.getElementById('feedbackMsg').textContent = '';
